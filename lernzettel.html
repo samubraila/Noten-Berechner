@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lernzettel – Linux, Raspberry Pi & Vertikale Kommunikation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0d0d14;
+      --surface: #13131f;
+      --card:    #16161f;
+      --card2:   #1c1c2e;
+      --border:  rgba(255,255,255,.07);
+      --border2: rgba(255,255,255,.12);
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --muted2:  #94a3b8;
+      /* accent colours */
+      --blue:    #6366f1;
+      --blue2:   #818cf8;
+      --teal:    #2dd4bf;
+      --green:   #4ade80;
+      --green2:  #22c55e;
+      --orange:  #fb923c;
+      --orange2: #f97316;
+      --purple:  #c084fc;
+      --purple2: #a855f7;
+      --red:     #f87171;
+      --yellow:  #fbbf24;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Inter',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.65;
+      font-size:14px;
+    }
+    body::before{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:
+        radial-gradient(ellipse 70% 40% at 10% 0%,   rgba(99,102,241,.11) 0%,transparent 55%),
+        radial-gradient(ellipse 50% 35% at 90% 100%,  rgba(168,85,247,.09)  0%,transparent 55%),
+        radial-gradient(ellipse 40% 30% at 50% 50%,   rgba(45,212,191,.04)  0%,transparent 60%);
+    }
+
+    /* ── HEADER ── */
+    header{
+      position:relative;z-index:1;
+      background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(168,85,247,.12));
+      border-bottom:1px solid var(--border2);
+      backdrop-filter:blur(12px);
+      text-align:center;
+      padding:1.75rem 1.5rem 1.4rem;
+    }
+    header h1{
+      font-size:1.7rem;font-weight:900;letter-spacing:-.4px;
+      background:linear-gradient(110deg,#c7d2fe,#a5b4fc,#c4b5fd);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    header p{color:var(--muted2);margin-top:.3rem;font-size:.9rem}
+
+    /* ── NAV ── */
+    nav{
+      position:sticky;top:0;z-index:100;
+      display:flex;flex-wrap:wrap;gap:.4rem;
+      padding:.7rem 1.25rem;
+      background:rgba(13,13,20,.85);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border);
+    }
+    nav a{
+      text-decoration:none;padding:.35rem .9rem;border-radius:999px;
+      font-weight:600;font-size:.78rem;letter-spacing:.1px;
+      border:1px solid transparent;transition:all .18s;
+    }
+    nav a.netz  {background:rgba(99,102,241,.15); color:#818cf8; border-color:rgba(99,102,241,.3)}
+    nav a.linux {background:rgba(74,222,128,.12);  color:#4ade80; border-color:rgba(74,222,128,.25)}
+    nav a.raspi {background:rgba(251,146,60,.12);  color:#fb923c; border-color:rgba(251,146,60,.25)}
+    nav a.komm  {background:rgba(192,132,252,.12); color:#c084fc; border-color:rgba(192,132,252,.25)}
+    nav a.noten {background:rgba(244,114,182,.12); color:#f472b6; border-color:rgba(244,114,182,.25)}
+    nav a:hover {filter:brightness(1.2);transform:translateY(-1px)}
+
+    /* ── MAIN ── */
+    main{position:relative;z-index:1;max-width:1060px;margin:0 auto;padding:1.5rem 1rem 5rem}
+
+    /* ── SECTION ── */
+    section{margin-bottom:2.5rem;scroll-margin-top:70px}
+    .section-header{
+      display:flex;align-items:center;gap:.65rem;
+      padding:.75rem 1.1rem;border-radius:12px 12px 0 0;
+      color:white;font-size:1.1rem;font-weight:800;letter-spacing:-.2px;
+    }
+    .section-header.netz  {background:linear-gradient(90deg,#3730a3,#6366f1)}
+    .section-header.linux {background:linear-gradient(90deg,#14532d,#22c55e)}
+    .section-header.raspi {background:linear-gradient(90deg,#9a3412,#f97316)}
+    .section-header.komm  {background:linear-gradient(90deg,#581c87,#a855f7)}
+    .section-body{
+      background:var(--card);
+      border:1px solid var(--border2);border-top:none;
+      border-radius:0 0 12px 12px;
+      padding:1.25rem 1.35rem;
+    }
+    .section-body h2{
+      font-size:1rem;font-weight:800;color:var(--text);
+      margin-bottom:.65rem;margin-top:1.3rem;padding-bottom:.3rem;
+      border-bottom:1px solid var(--border);
+    }
+    .section-body h2:first-child{margin-top:0}
+    .section-body h3{font-size:.9rem;font-weight:700;color:var(--muted2);margin-bottom:.4rem}
+    .section-body h4{font-size:.82rem;font-weight:700;color:var(--muted2);margin-bottom:.35rem}
+    .section-body p{font-size:.88rem;color:var(--muted2);margin-bottom:.4rem}
+
+    /* ── GRID CARDS ── */
+    .grid{display:grid;gap:.75rem}
+    .grid-2{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+    .grid-3{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+    .card{
+      background:var(--card2);border:1px solid var(--border2);
+      border-radius:10px;padding:.9rem 1rem;
+    }
+    .card h3{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.4rem}
+    .card p,.card li{font-size:.82rem;color:var(--muted)}
+    .card ul{padding-left:1.1rem}
+    .card li{margin-bottom:.2rem}
+
+    /* ── BOXES ── */
+    .box{
+      border-left:3px solid;padding:.7rem .95rem;
+      border-radius:0 8px 8px 0;margin:.6rem 0;font-size:.85rem;
+    }
+    .box.tip  {border-color:var(--teal);  background:rgba(45,212,191,.07); color:var(--muted2)}
+    .box.warn {border-color:var(--orange);background:rgba(251,146,60,.07); color:var(--muted2)}
+    .box.def  {border-color:var(--blue);  background:rgba(99,102,241,.08); color:var(--muted2)}
+    .box.mem  {border-color:var(--purple);background:rgba(168,85,247,.08); color:var(--muted2)}
+    .box strong{display:block;margin-bottom:.2rem;color:var(--text)}
+
+    /* ── CODE ── */
+    pre{
+      background:#090910;border:1px solid var(--border2);
+      color:#e2e8f0;padding:.85rem 1.05rem;border-radius:10px;
+      overflow-x:auto;font-size:.8rem;line-height:1.75;margin:.6rem 0;
+    }
+    code{font-family:'Cascadia Code','Fira Code','Consolas',monospace}
+    pre .cmd    {color:#7dd3fc}
+    pre .comment{color:#475569;font-style:italic}
+    pre .arg    {color:#86efac}
+    pre .path   {color:#fde68a}
+
+    /* ── TABLES ── */
+    .tbl-wrap{overflow-x:auto;margin:.65rem 0;border-radius:10px;border:1px solid var(--border2)}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
+    th{
+      background:#1e1e35;color:var(--muted2);
+      padding:.55rem .85rem;text-align:left;
+      font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+    }
+    td{padding:.5rem .85rem;border-bottom:1px solid var(--border);color:var(--muted2)}
+    tr:last-child td{border-bottom:none}
+    tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+    td strong,td code{color:var(--text)}
+
+    /* ── NETWORK DIAGRAM ── */
+    .net-diagram{
+      background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.2);
+      border-radius:12px;padding:1.25rem;margin:.75rem 0;
+    }
+    .net-row{display:flex;flex-wrap:wrap;gap:.65rem;justify-content:center;align-items:center;margin-bottom:.85rem}
+    .net-node{display:flex;flex-direction:column;align-items:center;gap:.25rem;font-size:.72rem;font-weight:600;text-align:center;min-width:68px;color:var(--muted2)}
+    .net-box{
+      width:66px;height:40px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:.78rem;font-weight:700;color:white;
+      box-shadow:0 2px 8px rgba(0,0,0,.35);
+    }
+    .nb-blue  {background:#3730a3}
+    .nb-teal  {background:#0f766e}
+    .nb-orange{background:#c2410c}
+    .nb-purple{background:#7e22ce}
+    .nb-green {background:#15803d}
+    .nb-gray  {background:#334155}
+    .net-ip{color:var(--muted);font-size:.65rem}
+    .net-label{font-size:.65rem;color:var(--blue);font-style:italic}
+    .net-zone{border:1.5px dashed;border-radius:10px;padding:.65rem .9rem;margin:.4rem 0;font-weight:700;font-size:.75rem}
+    .nz-werk{border-color:rgba(251,146,60,.4);background:rgba(251,146,60,.05);color:var(--orange)}
+    .nz-tech{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.05);color:var(--blue2)}
+    .nz-verk{border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.05);color:var(--teal)}
+    .nz-title{margin-bottom:.4rem}
+
+    /* ── PERMISSIONS ── */
+    .perm-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;font-size:.75rem;max-width:400px;margin:.65rem 0}
+    .perm-cell{padding:.35rem .15rem;text-align:center;border-radius:4px;font-weight:700}
+    .pc-head{background:#3730a3;color:white}
+    .pc-r   {background:rgba(74,222,128,.2);color:#4ade80}
+    .pc-w   {background:rgba(251,191,36,.2);color:#fbbf24}
+    .pc-x   {background:rgba(244,114,182,.2);color:#f472b6}
+    .pc-off {background:rgba(255,255,255,.05);color:var(--muted)}
+
+    /* ── OSI ── */
+    .osi-1 td{background:rgba(248,113,113,.08)!important}
+    .osi-2 td{background:rgba(251,191,36,.08)!important}
+    .osi-3 td{background:rgba(74,222,128,.08)!important}
+    .osi-4 td{background:rgba(96,165,250,.08)!important}
+    .osi-5 td{background:rgba(192,132,252,.08)!important}
+    .osi-6 td{background:rgba(244,114,182,.08)!important}
+    .osi-7 td{background:rgba(52,211,153,.08)!important}
+
+    /* ── PYRAMID ── */
+    .pyramid{display:flex;flex-direction:column;align-items:center;gap:3px;margin:.85rem 0}
+    .pyr-level{
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-weight:700;font-size:.78rem;
+      border-radius:6px;height:40px;text-align:center;padding:0 1rem;
+    }
+
+    /* ── BADGE ── */
+    .badge{
+      display:inline-block;
+      background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);
+      border-radius:6px;padding:.12rem .5rem;font-size:.72rem;
+      font-weight:700;color:#fbbf24;margin:.1rem .15rem;
+    }
+
+    /* ── DETAILS ── */
+    details{
+      background:var(--card2);border:1px solid var(--border2);
+      border-radius:9px;margin:.45rem 0;overflow:hidden;
+    }
+    summary{
+      padding:.6rem .95rem;cursor:pointer;font-weight:600;font-size:.88rem;
+      list-style:none;display:flex;align-items:center;gap:.5rem;color:var(--text);
+      transition:background .15s;
+    }
+    summary:hover{background:rgba(255,255,255,.03)}
+    summary::before{content:'▶';font-size:.62rem;color:var(--muted);transition:.2s}
+    details[open] summary::before{content:'▼'}
+    .details-body{padding:.5rem .95rem 1rem}
+
+    /* ── QUIZ ── */
+    .quiz-q{
+      background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);
+      border-radius:8px;padding:.7rem .95rem;margin:.45rem 0;
+      font-weight:600;font-size:.88rem;cursor:pointer;user-select:none;color:var(--text);
+      transition:background .15s;
+    }
+    .quiz-q:hover{background:rgba(251,191,36,.13)}
+    .quiz-a{
+      display:none;padding:.65rem .95rem;
+      background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.2);
+      border-top:none;border-radius:0 0 8px 8px;
+      font-size:.84rem;margin-top:-2px;color:var(--muted2);
+    }
+    .quiz-q.open+.quiz-a{display:block}
+
+    /* ── FOOTER ── */
+    footer{
+      position:relative;z-index:1;
+      text-align:center;padding:1.25rem;
+      color:var(--muted);font-size:.75rem;
+      border-top:1px solid var(--border);margin-top:2rem;
+    }
+
+    @media(max-width:600px){
+      header h1{font-size:1.25rem}
+      .grid-2,.grid-3{grid-template-columns:1fr}
+      .section-header{font-size:.95rem}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🖥️ Lernzettel – Linux · Raspberry Pi · Vertikale Kommunikation</h1>
+  <p>Alle Lernziele kompakt erklärt mit Beispielen, Befehlen &amp; Merkhilfen</p>
+</header>
+
+<nav>
+  <a href="#netzwerk" class="netz">🌐 Netzwerk­diagramm</a>
+  <a href="#linux"    class="linux">🐧 Linux</a>
+  <a href="#raspi"    class="raspi">🍓 Raspberry Pi</a>
+  <a href="#komm"          class="komm">🏭 Vertikale Kommunikation</a>
+  <a href="notenrechner.html" class="noten">📊 Notenrechner</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════════
+     NETZWERK DIAGRAMM
+══════════════════════════════════════════════ -->
+<section id="netzwerk">
+  <div class="section-header netz">🌐 Netzwerkdiagramm – AH Nettmann</div>
+  <div class="section-body">
+
+    <p style="margin-bottom:1rem">Das Bild zeigt die <strong>Netzwerkinfrastruktur</strong> des Unternehmens <em>AH Nettmann</em>. Es gibt drei physische Zonen und zwei IP-Subnetze.</p>
+
+    <!-- Rendered diagram -->
+    <div class="net-diagram">
+      <div style="text-align:center;font-weight:700;color:var(--blue);margin-bottom:1rem">☁️ Internet &amp; Cloud-Dienste (AH Nettmann)</div>
+
+      <!-- Internet router -->
+      <div class="net-row">
+        <div class="net-node">
+          <div class="net-box nb-gray">⛔ X</div>
+          <span>Firewall / Router</span>
+          <span class="net-ip">192.168.2.254</span>
+        </div>
+        <div style="font-size:1.5rem;color:var(--muted)">↕</div>
+        <div class="net-node">
+          <div class="net-box nb-blue">P8</div>
+          <span>Switch</span>
+          <span class="net-ip">Backbone</span>
+        </div>
+      </div>
+
+      <!-- Three zones -->
+      <div class="grid grid-3" style="gap:.75rem">
+
+        <!-- Werkstatt -->
+        <div class="net-zone nz-werk">
+          <div class="nz-title">🔧 Werkstatt &amp; Lager</div>
+          <div class="net-row" style="flex-direction:column;gap:.5rem">
+            <div class="net-node">
+              <div class="net-box nb-orange" style="width:100px">HMI ↔ PLC</div>
+              <span class="net-ip">192.168.0.16/24<br>192.168.2.16/24</span>
+            </div>
+            <div class="net-node">
+              <div class="net-box nb-teal" style="width:100px">RASPI</div>
+              <span class="net-ip">192.168.2.59/24</span>
+            </div>
+            <div class="net-node">
+              <div class="net-box nb-gray" style="width:100px">💻 Service-PC</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Technikraum -->
+        <div class="net-zone nz-tech">
+          <div class="nz-title">⚙️ Technikraum</div>
+          <div class="net-node" style="margin:auto">
+            <div class="net-box nb-purple" style="width:110px">OPC UA Server</div>
+            <span class="net-ip">192.168.0.15 (intern)<br>192.168.2.15 (Büro)</span>
+          </div>
+        </div>
+
+        <!-- Verkaufsraum -->
+        <div class="net-zone nz-verk">
+          <div class="nz-title">🛒 Verkaufsraum &amp; Büros</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center">
+            <div class="net-node">
+              <div class="net-box nb-gray">💻 PC</div>
+              <span>Büro</span>
+            </div>
+            <div class="net-node">
+              <div class="net-box nb-green">📱</div>
+              <span>Tablet</span>
+            </div>
+            <div class="net-node">
+              <div class="net-box nb-teal">📶 WLAN</div>
+              <span class="net-ip">192.168.2.13</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /net-diagram -->
+
+    <h3 style="margin-top:1.2rem;margin-bottom:.5rem">Erklärung aller Komponenten</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Komponente</th><th>IP-Adresse</th><th>Funktion / Bedeutung</th></tr>
+        <tr><td><strong>Internet / Cloud</strong></td><td>–</td><td>Verbindung zu externen Diensten (z. B. Remote-Monitoring, Updates)</td></tr>
+        <tr><td><strong>Firewall/Router (X-Symbol)</strong></td><td>192.168.2.254</td><td>Trennt das interne Netz vom Internet; kontrolliert den Datenverkehr. Das ❌-Symbol steht für eine Firewall.</td></tr>
+        <tr><td><strong>P8 – Switch</strong></td><td>Backbone</td><td>Verbindet alle Geräte im LAN (Layer 2). Managed Switch mit mindestens 8 Ports.</td></tr>
+        <tr><td><strong>OPC UA Server</strong></td><td>192.168.0.15 / 192.168.2.15</td><td>Kommunikationsprotokoll zwischen Maschinen (Shopfloor) und Office-IT. Steht im <em>Technikraum</em>. Hat zwei Netzwerkkarten → zwei Subnetze.</td></tr>
+        <tr><td><strong>HMI</strong> (Human Machine Interface)</td><td>Teil v. PLC</td><td>Bedienoberfläche für den Maschinenbediener (Touchscreen/Display an der Maschine)</td></tr>
+        <tr><td><strong>PLC</strong> (Speicherprogrammierbare Steuerung)</td><td>192.168.0.16/24<br>192.168.2.16/24</td><td>Steuert Maschinen &amp; Anlagen automatisch. Kein OPC-UA-Server direkt, kommuniziert über den OPC UA Server.</td></tr>
+        <tr><td><strong>RASPI</strong> (Raspberry Pi)</td><td>192.168.2.59/24</td><td>Kleiner Linux-Einplatinen-Computer. Liest Sensordaten ein (GPIO), leitet sie weiter. Verbunden mit Maschinen über Kabel (grüne Pfeile).</td></tr>
+        <tr><td><strong>Service-PC</strong></td><td>DHCP/statisch</td><td>PC für Wartung &amp; Inbetriebnahme im Werkstattbereich</td></tr>
+        <tr><td><strong>Büro-PCs</strong></td><td>192.168.2.x</td><td>Office-IT – Zugriff auf OPC UA Server (192.168.2.15) für Datenauswertung</td></tr>
+        <tr><td><strong>Tablet / Smartphone</strong></td><td>WLAN (192.168.2.x)</td><td>Mobiles Endgerät – verbindet sich über WLAN-AP</td></tr>
+        <tr><td><strong>WLAN-AP</strong></td><td>192.168.2.13</td><td>Access Point – stellt WLAN im Verkaufsraum bereit</td></tr>
+      </table>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:1rem">
+      <div class="box def">
+        <strong>📌 Subnetz 192.168.0.x/24</strong>
+        Nur Werkstattgeräte (PLC, OPC UA Server intern) → isoliertes Maschinennetz (Shopfloor). Kein direkter Internet-Zugang.
+      </div>
+      <div class="box tip">
+        <strong>📌 Subnetz 192.168.2.x/24</strong>
+        Office-IT, RASPI, OPC UA Server extern, WLAN → verbunden mit dem Internet über den Router (192.168.2.254).
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     LINUX
+══════════════════════════════════════════════ -->
+<section id="linux">
+  <div class="section-header linux">🐧 Linux</div>
+  <div class="section-body">
+
+    <!-- 1. Windows vs Linux -->
+    <h2 style="margin-bottom:.75rem">1. Windows vs. Linux – Abgrenzung</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Eigenschaft</th><th>🪟 Windows</th><th>🐧 Linux</th></tr>
+        <tr><td>Hersteller / Lizenz</td><td>Microsoft – proprietär, kostenpflichtig</td><td>Open Source (GPL) – kostenlos</td></tr>
+        <tr><td>Dateisystem</td><td>NTFS, FAT32</td><td>ext4, Btrfs, XFS …</td></tr>
+        <tr><td>Trennzeichen Pfad</td><td>Backslash <code>\</code></td><td>Slash <code>/</code></td></tr>
+        <tr><td>Laufwerksbuchstaben</td><td>C:\ D:\ …</td><td>Ein Verzeichnisbaum ab <code>/</code></td></tr>
+        <tr><td>Bedienung</td><td>GUI (Maus) primär</td><td>CLI (Terminal) primär, GUI optional</td></tr>
+        <tr><td>Rechteverwaltung</td><td>ACL / Benutzerkonten</td><td>rwx-Bits + Benutzergruppen</td></tr>
+        <tr><td>Einsatzgebiet</td><td>Desktop, Office</td><td>Server, Embedded, IoT, Raspberry Pi</td></tr>
+        <tr><td>Kernel</td><td>Windows NT Kernel</td><td>Linux-Kernel (Torvalds, 1991)</td></tr>
+      </table>
+    </div>
+    <div class="box mem">
+      <strong>🧠 Merksatz</strong>
+      „Linux ist wie eine Küche: Alles ist offen, du kannst alles anpassen – aber du musst wissen, was du tust. Windows ist ein fertiges Restaurant."
+    </div>
+
+    <!-- 2. Besonderheiten -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">2. Grundlegende Besonderheiten von Linux</h2>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>🔵 Alles ist eine Datei</h3>
+        <p>Geräte (<code>/dev/sda</code>), Prozesse (<code>/proc</code>), Netzwerk (<code>/sys</code>) – alles wird als Datei behandelt. Einheitliches Interface!</p>
+      </div>
+      <div class="card">
+        <h3>🔵 Multiuser-System</h3>
+        <p>Mehrere Benutzer gleichzeitig aktiv. Jeder hat eigene Rechte. Root = Superuser mit vollen Rechten.</p>
+      </div>
+      <div class="card">
+        <h3>🔵 Groß-/Kleinschreibung</h3>
+        <p><code>Datei.txt</code> ≠ <code>datei.txt</code>. Linux unterscheidet strikt zwischen Groß- und Kleinbuchstaben!</p>
+      </div>
+      <div class="card">
+        <h3>🔵 Distributionen</h3>
+        <p>Ubuntu, Debian, Fedora, Raspbian (Raspberry Pi OS) – alle basieren auf dem Linux-Kernel, unterscheiden sich in Paketmanager &amp; GUI.</p>
+      </div>
+      <div class="card">
+        <h3>🔵 Kein Laufwerksbuchstabe</h3>
+        <p>Alles startet bei <code>/</code> (Root-Verzeichnis). USB-Sticks werden <em>gemountet</em> z. B. unter <code>/mnt/usb</code>.</p>
+      </div>
+      <div class="card">
+        <h3>🔵 Shell / Terminal</h3>
+        <p>Bash ist die Standard-Shell. Befehle werden als Text eingegeben. Sehr mächtig für Automatisierung &amp; Scripts.</p>
+      </div>
+    </div>
+
+    <!-- 3. Aufbau Linux System -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">3. Aufbau des Linux-Dateisystems (FHS)</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Verzeichnis</th><th>Bedeutung</th><th>Beispielinhalt</th></tr>
+        <tr><td><code>/</code></td><td>Root – Wurzel des gesamten Dateisystems</td><td>alle anderen Verzeichnisse</td></tr>
+        <tr><td><code>/bin</code></td><td>Systemwerkzeuge (binaries)</td><td>ls, cp, mv, bash</td></tr>
+        <tr><td><code>/sbin</code></td><td>System-Binaries (nur root)</td><td>ifconfig, reboot</td></tr>
+        <tr><td><code>/etc</code></td><td>Konfigurationsdateien</td><td>passwd, hosts, fstab, ssh/sshd_config</td></tr>
+        <tr><td><code>/home</code></td><td>Heimverzeichnisse der Benutzer</td><td>/home/pi, /home/anna</td></tr>
+        <tr><td><code>/root</code></td><td>Heimverzeichnis von root</td><td>–</td></tr>
+        <tr><td><code>/tmp</code></td><td>Temporäre Dateien (werden gelöscht)</td><td>Laufzeit-Dateien</td></tr>
+        <tr><td><code>/var</code></td><td>Variable Daten (wachsen im Betrieb)</td><td>Logs: /var/log/syslog</td></tr>
+        <tr><td><code>/usr</code></td><td>Benutzer-Programme &amp; Bibliotheken</td><td>/usr/bin/python3</td></tr>
+        <tr><td><code>/dev</code></td><td>Gerätedateien</td><td>/dev/sda (Festplatte), /dev/ttyS0 (Seriell)</td></tr>
+        <tr><td><code>/proc</code></td><td>Virtuelles FS – Prozessinformationen</td><td>/proc/cpuinfo</td></tr>
+        <tr><td><code>/sys</code></td><td>Virtuelles FS – Hardware/Treiber-Info</td><td>GPIO-Zugriff auf Raspberry Pi</td></tr>
+        <tr><td><code>/mnt</code> / <code>/media</code></td><td>Eingehängte (gemountete) Datenträger</td><td>/media/pi/USB-Stick</td></tr>
+      </table>
+    </div>
+
+    <!-- 4. Linux Befehle -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">4. Grundlegende Linux-Befehle</h2>
+
+    <details open>
+      <summary>📁 Navigation &amp; Dateien</summary>
+      <div class="details-body">
+<pre><code><span class="cmd">pwd</span>                     <span class="comment"># Print Working Directory – wo bin ich?</span>
+<span class="cmd">ls</span> <span class="arg">-la</span>                  <span class="comment"># Alle Dateien auflisten (inkl. versteckte, Details)</span>
+<span class="cmd">cd</span> <span class="path">/home/pi</span>             <span class="comment"># In absoluten Pfad wechseln</span>
+<span class="cmd">cd</span> <span class="path">../ordner</span>            <span class="comment"># Relativer Pfad: eine Ebene rauf, dann in ordner</span>
+<span class="cmd">cd</span> <span class="path">~</span>                    <span class="comment"># Ins eigene Home-Verzeichnis</span>
+<span class="cmd">mkdir</span> <span class="path">neuerOrdner</span>       <span class="comment"># Neues Verzeichnis erstellen</span>
+<span class="cmd">rm</span> <span class="arg">-r</span> <span class="path">ordner/</span>          <span class="comment"># Verzeichnis rekursiv löschen</span>
+<span class="cmd">cp</span> <span class="path">quelle.txt ziel.txt</span> <span class="comment"># Datei kopieren</span>
+<span class="cmd">mv</span> <span class="path">alt.txt neu.txt</span>     <span class="comment"># Datei umbenennen / verschieben</span>
+<span class="cmd">touch</span> <span class="path">datei.txt</span>         <span class="comment"># Leere Datei erstellen / Zeitstempel aktualisieren</span>
+<span class="cmd">cat</span> <span class="path">datei.txt</span>           <span class="comment"># Inhalt anzeigen</span>
+<span class="cmd">nano</span> <span class="path">datei.txt</span>          <span class="comment"># Datei im Editor öffnen</span></code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>🔍 Suchen &amp; Filtern</summary>
+      <div class="details-body">
+<pre><code><span class="cmd">grep</span> <span class="arg">"hallo"</span> <span class="path">datei.txt</span>  <span class="comment"># Zeilen mit "hallo" suchen</span>
+<span class="cmd">find</span> <span class="path">/home</span> <span class="arg">-name "*.py"</span>  <span class="comment"># Python-Dateien ab /home suchen</span>
+<span class="cmd">which</span> python3             <span class="comment"># Wo liegt das Programm?</span>
+<span class="cmd">history</span>                   <span class="comment"># Befehlsverlauf anzeigen</span></code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>🌐 Netzwerk</summary>
+      <div class="details-body">
+<pre><code><span class="cmd">ip addr</span>                   <span class="comment"># IP-Adressen anzeigen (ersetzt ifconfig)</span>
+<span class="cmd">ping</span> <span class="arg">192.168.2.15</span>        <span class="comment"># Verbindung zum OPC UA Server testen</span>
+<span class="cmd">ssh</span> <span class="arg">pi@192.168.2.59</span>      <span class="comment"># Per SSH auf Raspberry Pi verbinden</span>
+<span class="cmd">scp</span> <span class="path">datei.txt pi@192.168.2.59:~/</span>  <span class="comment"># Datei auf RASPI kopieren</span>
+<span class="cmd">netstat -tuln</span>             <span class="comment"># Offene Ports anzeigen</span></code></pre>
+      </div>
+    </details>
+
+    <details>
+      <summary>⚙️ System &amp; Prozesse</summary>
+      <div class="details-body">
+<pre><code><span class="cmd">sudo</span> <span class="arg">apt update</span>          <span class="comment"># Paketlisten aktualisieren (als root)</span>
+<span class="cmd">sudo</span> <span class="arg">apt install python3</span> <span class="comment"># Paket installieren</span>
+<span class="cmd">ps aux</span>                    <span class="comment"># Laufende Prozesse anzeigen</span>
+<span class="cmd">kill</span> <span class="arg">1234</span>                 <span class="comment"># Prozess mit PID 1234 beenden</span>
+<span class="cmd">top</span>                       <span class="comment"># Echtzeit-Prozessübersicht (wie Task-Manager)</span>
+<span class="cmd">df -h</span>                     <span class="comment"># Speicherplatz anzeigen</span>
+<span class="cmd">free -m</span>                   <span class="comment"># Arbeitsspeicher anzeigen (in MB)</span>
+<span class="cmd">uname -a</span>                  <span class="comment"># Kernel-Version & System-Info</span>
+<span class="cmd">shutdown -h now</span>           <span class="comment"># System sofort herunterfahren</span>
+<span class="cmd">reboot</span>                    <span class="comment"># Neustart</span></code></pre>
+      </div>
+    </details>
+
+    <!-- 5. UNIX Konzepte -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">5. Technische UNIX-Konzepte</h2>
+
+    <div class="grid grid-2">
+      <div>
+        <h3 style="margin-bottom:.5rem">📂 Absolute vs. Relative Pfade</h3>
+        <div class="box def">
+          <strong>Absoluter Pfad</strong> – startet immer mit <code>/</code><br>
+          Beispiel: <code>/home/pi/projekt/sensor.py</code><br>
+          → Funktioniert immer, egal wo man sich befindet.
+        </div>
+        <div class="box tip">
+          <strong>Relativer Pfad</strong> – basiert auf dem aktuellen Verzeichnis<br>
+          Beispiel: Ich bin in <code>/home/pi</code> → <code>projekt/sensor.py</code><br>
+          Sonderzeichen: <code>.</code> = aktuelles Verz. | <code>..</code> = eine Ebene rauf | <code>~</code> = Home
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:.5rem">📄 Dateitypen in Linux</h3>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Symbol</th><th>Typ</th><th>Beispiel</th></tr>
+            <tr><td><code>-</code></td><td>Reguläre Datei</td><td>sensor.py, foto.jpg</td></tr>
+            <tr><td><code>d</code></td><td>Verzeichnis (directory)</td><td>/home/pi/</td></tr>
+            <tr><td><code>l</code></td><td>Symbolischer Link</td><td>/dev/stdin → …</td></tr>
+            <tr><td><code>b</code></td><td>Block-Gerät</td><td>/dev/sda</td></tr>
+            <tr><td><code>c</code></td><td>Zeichen-Gerät</td><td>/dev/ttyS0</td></tr>
+            <tr><td><code>p</code></td><td>Named Pipe</td><td>–</td></tr>
+            <tr><td><code>s</code></td><td>Socket</td><td>/var/run/…</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Berechtigungen -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">6. Berechtigungen &amp; Benutzergruppen</h2>
+    <p style="margin-bottom:.75rem">Jede Datei hat <strong>3 Berechtigungsgruppen</strong> mit je 3 Bits (rwx):</p>
+
+    <div class="perm-grid">
+      <div class="perm-cell pc-head">–</div>
+      <div class="perm-cell pc-head">r</div>
+      <div class="perm-cell pc-head">w</div>
+      <div class="perm-cell pc-head">x</div>
+      <div class="perm-cell pc-head">r</div>
+      <div class="perm-cell pc-head">w</div>
+      <div class="perm-cell pc-head">x</div>
+      <div class="perm-cell pc-head">r</div>
+      <div class="perm-cell pc-head">–</div>
+
+      <div class="perm-cell pc-head" style="font-size:.65rem">Typ</div>
+      <div class="perm-cell" style="background:#dbeafe;font-size:.65rem;grid-column:span 3;text-align:center"><strong>Besitzer (Owner)</strong></div>
+      <div class="perm-cell" style="background:#dcfce7;font-size:.65rem;grid-column:span 3;text-align:center"><strong>Gruppe (Group)</strong></div>
+      <div class="perm-cell" style="background:#fce7f3;font-size:.65rem;grid-column:span 2;text-align:center"><strong>Andere (Others)</strong></div>
+
+      <div class="perm-cell pc-off">-</div>
+      <div class="perm-cell pc-r">r</div>
+      <div class="perm-cell pc-w">w</div>
+      <div class="perm-cell pc-x">x</div>
+      <div class="perm-cell pc-r">r</div>
+      <div class="perm-cell pc-off">-</div>
+      <div class="perm-cell pc-x">x</div>
+      <div class="perm-cell pc-r">r</div>
+      <div class="perm-cell pc-off">-</div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:.75rem">
+      <div>
+        <div class="box def">
+          <strong>r = read (4)</strong> – Datei lesen<br>
+          <strong>w = write (2)</strong> – Datei schreiben / ändern<br>
+          <strong>x = execute (1)</strong> – Datei ausführen (Programm/Script)
+        </div>
+        <div class="box tip">
+          <strong>Berechnung: Oktal-Notation</strong><br>
+          <code>rwxr-xr--</code> = 7 5 4<br>
+          Besitzer: r+w+x = 4+2+1 = <strong>7</strong><br>
+          Gruppe: r+x = 4+1 = <strong>5</strong><br>
+          Andere: r = 4 = <strong>4</strong>
+        </div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:.5rem">Wichtige Befehle:</h4>
+<pre><code><span class="cmd">ls -l</span>               <span class="comment"># Rechte anzeigen</span>
+<span class="comment"># Ausgabe: -rwxr-xr-- pi gruppe datei.py</span>
+
+<span class="cmd">chmod</span> <span class="arg">755</span> <span class="path">script.sh</span>  <span class="comment"># rwxr-xr-x setzen</span>
+<span class="cmd">chmod</span> <span class="arg">+x</span> <span class="path">script.sh</span>  <span class="comment"># Ausführbar machen</span>
+<span class="cmd">chown</span> <span class="arg">pi:pi</span> <span class="path">datei</span>   <span class="comment"># Besitzer:Gruppe ändern</span>
+<span class="cmd">groups</span> pi           <span class="comment"># Gruppen eines Benutzers zeigen</span>
+<span class="cmd">sudo usermod -aG gpio pi</span>  <span class="comment"># pi zur gpio-Gruppe hinzufügen</span></code></pre>
+      </div>
+    </div>
+
+    <div class="box warn">
+      <strong>⚠️ Wichtige Gruppen auf dem Raspberry Pi</strong>
+      <code>gpio</code> – GPIO-Zugriff | <code>i2c</code> – I2C-Bus | <code>spi</code> – SPI-Bus | <code>sudo</code> – Root-Befehle | <code>pi</code> – Standard-Benutzer
+    </div>
+
+    <!-- Quiz Linux -->
+    <h3 style="margin-top:1.2rem;margin-bottom:.5rem">🧠 Quiz – Linux (zum Anklicken)</h3>
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Was bedeutet <code>chmod 644 datei.txt</code>?</div>
+    <div class="quiz-a">Besitzer: rw- (6=4+2), Gruppe: r-- (4), Andere: r-- (4). Der Besitzer kann lesen und schreiben, alle anderen nur lesen.</div>
+
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Was ist der Unterschied zwischen <code>/bin</code> und <code>/sbin</code>?</div>
+    <div class="quiz-a"><code>/bin</code> enthält Programme für <em>alle</em> Benutzer (z. B. ls, cp). <code>/sbin</code> enthält System-Programme, die nur root ausführen darf (z. B. ifconfig, reboot).</div>
+
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Ich bin in <code>/home/pi/projekt</code>. Wie komme ich mit einem relativen Pfad nach <code>/home/pi/scripts</code>?</div>
+    <div class="quiz-a"><code>cd ../scripts</code> – mit <code>..</code> eine Ebene rauf nach <code>/home/pi</code>, dann in <code>scripts</code>.</div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     RASPBERRY PI
+══════════════════════════════════════════════ -->
+<section id="raspi">
+  <div class="section-header raspi">🍓 Raspberry Pi</div>
+  <div class="section-body">
+
+    <!-- Belegungsplan -->
+    <h2 style="margin-bottom:.75rem">1. Belegungs- und Schaltplan</h2>
+    <div class="grid grid-2">
+      <div>
+        <div class="box def">
+          <strong>📋 Belegungsplan (Pinout)</strong>
+          Zeigt welcher GPIO-Pin welche Funktion hat. Der Raspberry Pi hat 40 Pins (GPIO, 3.3V, 5V, GND, SPI, I2C, UART).
+        </div>
+        <div class="box tip">
+          <strong>🔌 Schaltplan (Schematic)</strong>
+          Zeigt wie externe Bauteile (LEDs, Sensoren, Widerstände) mit den GPIO-Pins verbunden werden. Enthält: Widerstände, Spannungsversorgung, Signalleitungen.
+        </div>
+        <div class="box warn">
+          <strong>⚡ GPIO-Spannungspegel: 3.3V !</strong>
+          Die GPIO-Pins des Raspberry Pi arbeiten mit <strong>3,3V</strong> – NICHT 5V! Ein 5V-Signal direkt am GPIO-Pin kann den Pi zerstören!
+        </div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:.5rem">Typischer GPIO-Aufbau (LED):</h4>
+<pre style="font-size:.8rem"><code>  GPIO (3.3V) ──┬── [R = 330Ω] ──┬── LED(+) ──┬── GND
+                │                │            │
+                └── High = LED an└── Low  = LED aus
+
+Schaltplan-Symbole:
+  ──[  ]──  Widerstand
+  ──|>|──   LED (Pfeil = Stromrichtung)
+  ──┴──     GND (Masse)
+  VCC       Versorgungsspannung</code></pre>
+      </div>
+    </div>
+
+    <!-- OSI Netzwerkzugriff -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">2. Netzwerkzugriff auf RASPI &amp; OSI-Schichten-Fehleranalyse</h2>
+    <p style="margin-bottom:.75rem">Zugriff per SSH: <code>ssh pi@192.168.2.59</code> – wenn das nicht klappt, systematisch durch die OSI-Schichten prüfen:</p>
+
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>OSI-Schicht</th><th>Was prüfen?</th><th>Tool / Befehl</th></tr>
+        <tr class="osi-1"><td><strong>1 – Physikalisch</strong></td><td>Kabel eingesteckt? LAN-Kabel defekt? WLAN-Signal?</td><td>Augen / LEDs am Switch prüfen</td></tr>
+        <tr class="osi-2"><td><strong>2 – Sicherung</strong></td><td>MAC-Adresse bekannt? ARP-Eintrag vorhanden?</td><td><code>arp -a</code></td></tr>
+        <tr class="osi-3"><td><strong>3 – Netzwerk (IP)</strong></td><td>IP korrekt vergeben? Selbes Subnetz? Route vorhanden?</td><td><code>ip addr</code> · <code>ping 192.168.2.59</code></td></tr>
+        <tr class="osi-4"><td><strong>4 – Transport (TCP)</strong></td><td>Port 22 (SSH) offen? Firewall blockiert?</td><td><code>netstat -tuln</code> · <code>nmap -p22 192.168.2.59</code></td></tr>
+        <tr class="osi-5"><td><strong>5 – Sitzung</strong></td><td>SSH-Dienst läuft? Verbindung aufgebaut?</td><td><code>systemctl status ssh</code></td></tr>
+        <tr class="osi-6"><td><strong>6 – Darstellung</strong></td><td>Verschlüsselung/Komprimierung (selten Problem)</td><td>SSH-Version prüfen</td></tr>
+        <tr class="osi-7"><td><strong>7 – Anwendung</strong></td><td>SSH-Key/Passwort falsch? Benutzer gesperrt?</td><td><code>sudo journalctl -u ssh</code></td></tr>
+      </table>
+    </div>
+    <div class="box mem">
+      <strong>🧠 Merksatz OSI-Schichten (von unten nach oben)</strong>
+      <strong>"P</strong>hysiker <strong>S</strong>ind <strong>N</strong>icht <strong>T</strong>otale <strong>S</strong>tupide <strong>D</strong>umme <strong>A</strong>ffen"<br>
+      Physical – Sicherung – Netzwerk – Transport – Session – Darstellung – Anwendung
+    </div>
+
+    <!-- Spannungsberechnung -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">3. Spannung an GPIO-Eingängen berechnen</h2>
+    <div class="grid grid-2">
+      <div>
+        <div class="box def">
+          <strong>⚡ Spannungsteiler-Formel</strong><br>
+          Wenn zwei Widerstände R1 und R2 in Reihe an VCC (3.3V) liegen:<br><br>
+          <code>U_GPIO = VCC × R2 / (R1 + R2)</code><br><br>
+          U_GPIO = Spannung am GPIO-Pin (= an R2)
+        </div>
+        <div class="box tip">
+          <strong>Beispiel:</strong><br>
+          VCC = 3.3V, R1 = 10kΩ, R2 = 10kΩ<br>
+          U_GPIO = 3.3V × 10k / (10k + 10k)<br>
+          U_GPIO = 3.3V × 0.5 = <strong>1.65V</strong>
+        </div>
+      </div>
+      <div>
+        <h4 style="margin-bottom:.5rem">Direktanschluss (kein Teiler):</h4>
+        <div class="box warn">
+          GPIO direkt an 3.3V → <strong>HIGH</strong> (logisch 1)<br>
+          GPIO direkt an GND → <strong>LOW</strong> (logisch 0)<br><br>
+          Schwellwert Raspberry Pi:<br>
+          HIGH: &gt; 1.8V | LOW: &lt; 0.8V
+        </div>
+      </div>
+    </div>
+
+    <!-- Stromstärke -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">4. Stromstärke berechnen (Ohmsches Gesetz)</h2>
+    <div class="grid grid-2">
+      <div>
+        <div class="box def">
+          <strong>🔢 Ohmsches Gesetz</strong><br><br>
+          <code>U = R × I</code><br>
+          <code>I = U / R</code><br>
+          <code>R = U / I</code><br><br>
+          U = Spannung [V] | R = Widerstand [Ω] | I = Stromstärke [A]
+        </div>
+      </div>
+      <div>
+        <div class="box tip">
+          <strong>Beispiel: LED-Widerstand berechnen</strong><br>
+          GPIO = 3.3V, LED-Spannung U_LED = 2V, gewünschter Strom I = 10mA = 0.01A<br><br>
+          Spannung am Widerstand: U_R = 3.3V − 2V = 1.3V<br>
+          R = U_R / I = 1.3V / 0.01A = <strong>130Ω</strong><br>
+          → Nächster Standardwert: <strong>150Ω oder 220Ω</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Widerstand dimensionieren -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">5. Widerstände prüfen &amp; dimensionieren</h2>
+    <div class="box warn">
+      <strong>⚠️ GPIO-Strom-Limit des Raspberry Pi</strong>
+      Max. <strong>16 mA pro GPIO-Pin</strong>, max. <strong>50 mA gesamt</strong> über alle GPIOs!<br>
+      Formel für Mindestwiderstand: R_min = (VCC − U_Bauteil) / I_max
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Situation</th><th>Berechnung</th><th>Ergebnis</th></tr>
+        <tr><td>LED (U=2V, I_max=20mA)</td><td>R = (3.3−2) / 0.02</td><td>65Ω → <strong>min. 68Ω</strong> nehmen</td></tr>
+        <tr><td>LED (I=10mA, sicher)</td><td>R = (3.3−2) / 0.01</td><td>130Ω → <strong>150Ω</strong> nehmen</td></tr>
+        <tr><td>Pegel-Schutz (kein Bauteil)</td><td>R = 3.3 / 0.016</td><td>ca. 200Ω → Schutzwiderstand</td></tr>
+      </table>
+    </div>
+
+    <!-- Pull-up / Pull-down -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">6. Pull-up und Pull-down Widerstände</h2>
+    <div class="grid grid-2">
+      <div>
+        <div class="box def">
+          <strong>⬆️ Pull-up Widerstand</strong><br>
+          GPIO wird über R (z.B. 10kΩ) mit VCC (3.3V) verbunden.<br><br>
+          → Ohne Tasterdruck: GPIO liest <strong>HIGH</strong> (3.3V)<br>
+          → Mit Tasterdruck (GND): GPIO liest <strong>LOW</strong> (0V)<br><br>
+<pre style="background:#f0fdf4;color:#166534;font-size:.78rem;border-radius:6px;padding:.5rem">
+  3.3V ──[10kΩ]──┬── GPIO
+                 │
+              [Taster]
+                 │
+               GND</pre>
+          <em>Logik: Normal HIGH, bei Druck LOW</em>
+        </div>
+      </div>
+      <div>
+        <div class="box tip">
+          <strong>⬇️ Pull-down Widerstand</strong><br>
+          GPIO wird über R (z.B. 10kΩ) mit GND verbunden.<br><br>
+          → Ohne Tasterdruck: GPIO liest <strong>LOW</strong> (0V)<br>
+          → Mit Tasterdruck (3.3V): GPIO liest <strong>HIGH</strong><br><br>
+<pre style="background:#f0fdf4;color:#166534;font-size:.78rem;border-radius:6px;padding:.5rem">
+  3.3V
+    │
+ [Taster]
+    │
+    ├── GPIO
+    │
+  [10kΩ]
+    │
+   GND</pre>
+          <em>Logik: Normal LOW, bei Druck HIGH</em>
+        </div>
+      </div>
+    </div>
+    <div class="box mem">
+      <strong>🧠 Merkhilfe</strong>
+      Pull-<strong>up</strong>: zieht den Pin nach <strong>oben</strong> (HIGH) → Taster drückt ihn runter (LOW)<br>
+      Pull-<strong>down</strong>: zieht den Pin nach <strong>unten</strong> (LOW) → Taster hebt ihn hoch (HIGH)<br>
+      <em>Ohne Pull-Widerstand: „floating" = undefinierter Zustand → fehlerhafte Erkennung!</em>
+    </div>
+
+    <!-- Raspberry Pi Quiz -->
+    <h3 style="margin-top:1.2rem;margin-bottom:.5rem">🧠 Quiz – Raspberry Pi (anklicken)</h3>
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Du hast eine LED mit U_LED = 2.2V. GPIO = 3.3V, Strom = 10mA. Wie groß muss der Vorwiderstand mindestens sein?</div>
+    <div class="quiz-a">U_R = 3.3 − 2.2 = 1.1V<br>R = U_R / I = 1.1V / 0.01A = <strong>110Ω</strong> → Standardwert: 120Ω oder 150Ω nehmen.</div>
+
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ SSH auf den RASPI (192.168.2.59) klappt nicht. Ping klappt. Welche OSI-Schicht hat das Problem und was prüfst du?</div>
+    <div class="quiz-a">Ping = Layer 3 (IP) funktioniert. Problem ist also Layer 4+ (Port 22 zu?) oder Layer 7 (SSH-Dienst läuft nicht?).<br>Prüfen: <code>systemctl status ssh</code> auf dem RASPI, <code>netstat -tuln | grep 22</code>.</div>
+
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Wozu braucht man Pull-Widerstände? Was passiert ohne sie?</div>
+    <div class="quiz-a">Ohne Pull-Widerstand ist ein GPIO-Eingang „floating" – er hat keinen definierten Pegel. Kleine Störungen (elektromagnetische Einstreuung) lassen den Pin zufällig HIGH oder LOW werden → unzuverlässige Erkennung des Tastersignals.</div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     VERTIKALE KOMMUNIKATION
+══════════════════════════════════════════════ -->
+<section id="komm">
+  <div class="section-header komm">🏭 Vertikale Kommunikation &amp; Automatisierung</div>
+  <div class="section-body">
+
+    <!-- Vertikal vs Horizontal -->
+    <h2 style="margin-bottom:.75rem">1. Vertikale vs. Horizontale Kommunikation</h2>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>↕️ Vertikale Kommunikation</h3>
+        <p style="margin-bottom:.5rem">Kommunikation <strong>zwischen verschiedenen Ebenen</strong> der Automatisierungspyramide.</p>
+        <p><strong>Beispiel:</strong> SPS sendet Daten → SCADA-System → MES → ERP (von unten nach oben)</p>
+        <p style="margin-top:.5rem"><span class="badge">OPC UA</span> <span class="badge">MQTT</span> <span class="badge">REST-API</span></p>
+      </div>
+      <div class="card">
+        <h3>↔️ Horizontale Kommunikation</h3>
+        <p style="margin-bottom:.5rem">Kommunikation <strong>innerhalb einer Ebene</strong>, z. B. zwischen zwei SPS-Steuerungen oder zwei Maschinen.</p>
+        <p><strong>Beispiel:</strong> Maschine A sendet Fertigmeldung an Maschine B (gleiche Ebene)</p>
+        <p style="margin-top:.5rem"><span class="badge">Profibus</span> <span class="badge">EtherCAT</span> <span class="badge">Profinet</span></p>
+      </div>
+    </div>
+
+    <!-- Shopfloor / Office / Cloud -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">2. Shopfloor – Office-IT – Cloud</h2>
+    <div class="grid grid-3">
+      <div class="card" style="border-top: 4px solid var(--orange)">
+        <h3>🔧 Shopfloor</h3>
+        <p>Fertigungsebene – direkt an der Maschine. Echtzeitanforderungen, robuste Protokolle.</p>
+        <p style="margin-top:.5rem"><span class="badge">PLC/SPS</span> <span class="badge">HMI</span> <span class="badge">Sensoren</span> <span class="badge">Aktoren</span></p>
+        <p style="margin-top:.5rem;font-size:.82rem;color:var(--muted)">IP: 192.168.0.x (isoliert)</p>
+      </div>
+      <div class="card" style="border-top: 4px solid var(--blue)">
+        <h3>💼 Office-IT</h3>
+        <p>Büroebene – Datenauswertung, Planung, ERP. Verbunden mit Shopfloor über OPC UA.</p>
+        <p style="margin-top:.5rem"><span class="badge">PCs</span> <span class="badge">SCADA</span> <span class="badge">MES</span> <span class="badge">ERP</span></p>
+        <p style="margin-top:.5rem;font-size:.82rem;color:var(--muted)">IP: 192.168.2.x</p>
+      </div>
+      <div class="card" style="border-top: 4px solid var(--purple)">
+        <h3>☁️ Cloud</h3>
+        <p>Externe Dienste – Fernwartung, Big Data, KI-Analyse, externe Apps.</p>
+        <p style="margin-top:.5rem"><span class="badge">Azure</span> <span class="badge">AWS</span> <span class="badge">Google Cloud</span></p>
+        <p style="margin-top:.5rem;font-size:.82rem;color:var(--muted)">Über Internet/Firewall</p>
+      </div>
+    </div>
+
+    <!-- Cloud / Fog / Edge -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">3. Cloud – Fog – Edge Computing</h2>
+    <div class="grid grid-3">
+      <div class="card" style="border-left: 4px solid var(--purple)">
+        <h3>☁️ Cloud Computing</h3>
+        <p>Verarbeitung in entfernten Rechenzentren.</p>
+        <ul>
+          <li>Große Rechenleistung</li>
+          <li>Hohe Latenz (ms bis Sekunden)</li>
+          <li>Für Langzeitanalyse, KI-Training</li>
+        </ul>
+        <p style="margin-top:.5rem"><em>Beispiel: Azure IoT Hub analysiert Produktionsdaten</em></p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--teal)">
+        <h3>🌫️ Fog Computing</h3>
+        <p>Verarbeitung in lokalen Servern (nahe am Shopfloor).</p>
+        <ul>
+          <li>Mittlere Latenz (ms-Bereich)</li>
+          <li>Lokales Netzwerk</li>
+          <li>Für Datenaggregation, lokale Auswertung</li>
+        </ul>
+        <p style="margin-top:.5rem"><em>Beispiel: OPC UA Server im Technikraum</em></p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--orange)">
+        <h3>⚡ Edge Computing</h3>
+        <p>Verarbeitung direkt am Gerät / an der Maschine.</p>
+        <ul>
+          <li>Sehr niedrige Latenz (&lt;1ms)</li>
+          <li>Kein Netzwerk nötig</li>
+          <li>Für Echtzeit-Regelung, Anomalieerkennung</li>
+        </ul>
+        <p style="margin-top:.5rem"><em>Beispiel: Raspberry Pi am Sensor = Edge Device</em></p>
+      </div>
+    </div>
+    <div class="box mem">
+      <strong>🧠 Merkhilfe: Wo wird verarbeitet?</strong>
+      Edge = <strong>am Gerät selbst</strong> (schnellste) → Fog = <strong>lokal im Netz</strong> (mittel) → Cloud = <strong>weit weg im Internet</strong> (langsam aber mächtig)
+    </div>
+
+    <!-- Cloud-Dienste -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">4. Cloud-Dienste: IaaS, PaaS, SaaS</h2>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Modell</th><th>Bedeutung</th><th>Was bekommt man?</th><th>Beispiel</th></tr>
+        <tr>
+          <td><strong>IaaS</strong></td>
+          <td>Infrastructure as a Service</td>
+          <td>Virtuelle Maschinen, Speicher, Netzwerk – du installierst alles selbst</td>
+          <td>Amazon EC2, Azure VM, Google Compute</td>
+        </tr>
+        <tr>
+          <td><strong>PaaS</strong></td>
+          <td>Platform as a Service</td>
+          <td>Entwicklungsumgebung, Datenbank, Runtime – du entwickelst nur noch die App</td>
+          <td>Azure App Service, Heroku, Google App Engine</td>
+        </tr>
+        <tr>
+          <td><strong>SaaS</strong></td>
+          <td>Software as a Service</td>
+          <td>Fertige Software im Browser/App – nichts installieren, direkt nutzen</td>
+          <td>Microsoft 365, SAP S/4HANA Cloud, Salesforce</td>
+        </tr>
+        <tr>
+          <td><strong>FaaS</strong></td>
+          <td>Function as a Service</td>
+          <td>Einzelne Funktionen ohne Server-Verwaltung ausführen (Serverless)</td>
+          <td>AWS Lambda, Azure Functions</td>
+        </tr>
+      </table>
+    </div>
+    <div class="box mem">
+      <strong>🧠 Eselsbrücke</strong>
+      <strong>I</strong>aaS = <strong>I</strong>ch baue alles selbst (Grundstück) |
+      <strong>P</strong>aaS = <strong>P</strong>lattform steht, ich baue nur mein Haus |
+      <strong>S</strong>aaS = <strong>S</strong>chon fertig, ich ziehe nur ein
+    </div>
+
+    <!-- Automatisierungspyramide -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">5. Automatisierungspyramide</h2>
+    <div class="grid grid-2">
+      <div>
+        <div class="pyramid">
+          <div class="pyr-level" style="background:#7c3aed;width:100%">Ebene 5: ERP – Unternehmensführung</div>
+          <div class="pyr-level" style="background:#2563eb;width:88%">Ebene 4: MES – Betriebsleitebene</div>
+          <div class="pyr-level" style="background:#0891b2;width:76%">Ebene 3: SCADA / Prozessleitebene</div>
+          <div class="pyr-level" style="background:#16a34a;width:64%">Ebene 2: SPS / Steuerungsebene</div>
+          <div class="pyr-level" style="background:#ea580c;width:52%">Ebene 1: Sensoren / Aktoren</div>
+          <div class="pyr-level" style="background:#dc2626;width:40%">Ebene 0: Feldebene (Maschinen)</div>
+        </div>
+      </div>
+      <div>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Ebene</th><th>Name</th><th>Systeme / Komponenten</th></tr>
+            <tr><td>5</td><td>ERP</td><td>SAP, Microsoft Dynamics – Aufträge, Finanzen, HR</td></tr>
+            <tr><td>4</td><td>MES</td><td>Manufacturing Execution System – Produktionsplanung, Qualität</td></tr>
+            <tr><td>3</td><td>SCADA</td><td>Supervisory Control – Überwachung &amp; Visualisierung ganzer Anlagen</td></tr>
+            <tr><td>2</td><td>SPS/PLC</td><td>Speicherprogrammierbare Steuerung – Maschinensteuerung</td></tr>
+            <tr><td>1</td><td>Sensoren/Aktoren</td><td>Temperatursensor, Druckluftventil, Motorantrieb</td></tr>
+            <tr><td>0</td><td>Feldebene</td><td>Die physischen Maschinen &amp; Anlagen selbst</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Von Pyramide zu Netz -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">6. Von der Pyramide zur vermaschten Struktur</h2>
+    <div class="grid grid-2">
+      <div class="card" style="border-top:4px solid var(--muted)">
+        <h3>🏔️ Klassische Pyramide</h3>
+        <ul>
+          <li>Strenge Hierarchie von oben nach unten</li>
+          <li>Jede Ebene kommuniziert nur mit der Nachbarebene</li>
+          <li>Langsame Kommunikation durch viele Ebenen</li>
+          <li>Schwer skalierbar, Silos</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:4px solid var(--teal)">
+        <h3>🕸️ Vermaschte Struktur (IIoT)</h3>
+        <ul>
+          <li>Jede Ebene kann direkt mit jeder kommunizieren</li>
+          <li>Sensor sendet direkt in die Cloud (Edge → Cloud)</li>
+          <li>Schnellere Reaktionen, mehr Flexibilität</li>
+          <li>Grundlage für Industrie 4.0 / IIoT</li>
+        </ul>
+      </div>
+    </div>
+    <div class="box tip">
+      <strong>Vorteile der vermaschten Struktur:</strong>
+      Direkte Kommunikation (Sensor → Cloud) | Schnellere Auswertung | Keine „Flaschenhälse" durch Mittelebenen | Bessere Skalierbarkeit | Grundlage für KI-basierte Produktion (Predictive Maintenance)
+    </div>
+
+    <!-- SCADA -->
+    <h2 style="margin-top:1.5rem;margin-bottom:.75rem">7. SCADA-Systeme</h2>
+    <div class="box def">
+      <strong>SCADA = Supervisory Control and Data Acquisition</strong><br>
+      System zur <strong>Überwachung, Steuerung und Datenerfassung</strong> von industriellen Prozessen und Anlagen über große geografische Bereiche.
+    </div>
+    <div class="grid grid-2">
+      <div>
+        <h4 style="margin-bottom:.5rem">Aufgaben von SCADA:</h4>
+        <ul style="font-size:.93rem;padding-left:1.2rem">
+          <li>Echtzeit-<strong>Visualisierung</strong> von Prozessen (Dashboards)</li>
+          <li><strong>Alarmierung</strong> bei Störungen (E-Mail, SMS)</li>
+          <li><strong>Historische Daten</strong> aufzeichnen &amp; archivieren</li>
+          <li>Fernbedienung von Anlagen (&gt; Fernsteuerung)</li>
+          <li>Berichterstellung für Management</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="margin-bottom:.5rem">Eigenschaften:</h4>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>Merkmal</th><th>Ausprägung</th></tr>
+            <tr><td>Reaktionszeit</td><td>Sekunden bis Minuten (nicht Echtzeit)</td></tr>
+            <tr><td>Bereich</td><td>Ganze Anlage, Fabrik, Region</td></tr>
+            <tr><td>Protokolle</td><td>OPC UA, Modbus, DNP3</td></tr>
+            <tr><td>Beispiele</td><td>Siemens WinCC, Wonderware, Ignition</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="box warn">
+      <strong>⚠️ SCADA ≠ Echtzeit-Steuerung!</strong>
+      SCADA überwacht und visualisiert – die eigentliche Echtzeit-Steuerung übernimmt die SPS (Ebene 2). SCADA sitzt auf Ebene 3.
+    </div>
+
+    <!-- Quiz Kommunikation -->
+    <h3 style="margin-top:1.2rem;margin-bottom:.5rem">🧠 Quiz – Vertikale Kommunikation</h3>
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Was ist der Unterschied zwischen Edge und Fog Computing?</div>
+    <div class="quiz-a">Edge: Verarbeitung direkt am Gerät/Sensor – keine Netzwerklatenz, Echtzeit möglich. Fog: Verarbeitung auf einem lokalen Server/Gateway im Netz – etwas mehr Latenz, aber mehr Rechenleistung und Datenaggregation über mehrere Geräte möglich.</div>
+
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ In welcher Ebene der Automatisierungspyramide sitzt der OPC UA Server aus dem Netzwerkdiagramm?</div>
+    <div class="quiz-a">Der OPC UA Server sitzt auf <strong>Ebene 3 (SCADA/Prozessleitebene)</strong>. Er sammelt Daten von der SPS (Ebene 2) und stellt sie der Office-IT (Ebene 4/5) zur Verfügung – er ist das Bindeglied zwischen Shopfloor und Office.</div>
+
+    <div class="quiz-q" onclick="this.classList.toggle('open')">❓ Warum ist die vermaschte Struktur besser als die klassische Pyramide?</div>
+    <div class="quiz-a">In der Pyramide muss Kommunikation durch alle Ebenen – das dauert und erzeugt Engpässe. In der vermaschten Struktur kann ein Sensor direkt in die Cloud senden (Edge → Cloud), was schnellere Reaktionen und flexiblere Architektur ermöglicht. Besonders wichtig für IIoT und Industrie 4.0.</div>
+
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Lernzettel erstellt für: Linux · Raspberry Pi · Vertikale Kommunikation | Netzwerkdiagramm AH Nettmann
+</footer>
+
+<script>
+  // Quiz click handler - already inline, this just ensures smooth scroll
+  document.querySelectorAll('nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
