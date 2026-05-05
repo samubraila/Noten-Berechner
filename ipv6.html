@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IPv6 Lernzettel & Übungen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d14; --s1:#13131f; --s2:#1a1a2e; --s3:#1e1e35;
+  --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+  --text:#e2e8f0; --muted:#64748b; --muted2:#94a3b8;
+  --blue:#6366f1; --blue2:#818cf8; --blue3:#c7d2fe;
+  --teal:#2dd4bf; --green:#4ade80; --orange:#fb923c;
+  --purple:#c084fc; --red:#f87171; --yellow:#fbbf24;
+  --pink:#f472b6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.65}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 65% 40% at 5%   0%,  rgba(99,102,241,.13) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 35% at 95% 100%, rgba(45,212,191,.09)  0%,transparent 55%),
+    radial-gradient(ellipse 40% 30% at 60%  50%, rgba(168,85,247,.06)  0%,transparent 60%);
+}
+
+/* ── HEADER ── */
+header{
+  position:relative;z-index:1;
+  background:linear-gradient(135deg,rgba(45,212,191,.15),rgba(99,102,241,.12),rgba(168,85,247,.1));
+  border-bottom:1px solid var(--border2);backdrop-filter:blur(14px);
+  text-align:center;padding:1.6rem 1rem 1.3rem;
+}
+header h1{
+  font-size:1.7rem;font-weight:900;letter-spacing:-.4px;
+  background:linear-gradient(110deg,#67e8f9,#818cf8,#c4b5fd);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+header p{color:var(--muted2);margin-top:.3rem;font-size:.85rem}
+.back-btn{
+  display:inline-block;margin-top:.65rem;
+  font-size:.75rem;font-weight:600;color:var(--muted2);text-decoration:none;
+  border:1px solid var(--border2);border-radius:999px;padding:.28rem .85rem;
+  background:rgba(255,255,255,.04);transition:all .15s;
+}
+.back-btn:hover{background:rgba(255,255,255,.09);color:var(--text)}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;flex-wrap:wrap;gap:.35rem;padding:.6rem 1.1rem;
+  background:rgba(13,13,20,.88);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+nav a{
+  text-decoration:none;padding:.3rem .8rem;border-radius:999px;
+  font-weight:600;font-size:.75rem;border:1px solid transparent;
+  transition:all .15s;
+}
+nav a.th {background:rgba(45,212,191,.12);color:var(--teal);  border-color:rgba(45,212,191,.25)}
+nav a.qz {background:rgba(251,191,36,.12);color:var(--yellow);border-color:rgba(251,191,36,.25)}
+nav a.mc {background:rgba(99,102,241,.12);color:var(--blue2); border-color:rgba(99,102,241,.25)}
+nav a.ad {background:rgba(244,114,182,.12);color:var(--pink);  border-color:rgba(244,114,182,.25)}
+nav a.sn {background:rgba(251,146,60,.12);color:var(--orange);border-color:rgba(251,146,60,.25)}
+nav a.rt {background:rgba(192,132,252,.12);color:var(--purple);border-color:rgba(192,132,252,.25)}
+nav a:hover{filter:brightness(1.2);transform:translateY(-1px)}
+
+/* ── SCORE BAR ── */
+.scorebar{
+  position:relative;z-index:1;
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  max-width:1000px;margin:1.1rem auto .1rem;padding:0 1rem;
+}
+.sc{
+  background:var(--s2);border:1px solid var(--border2);border-radius:9px;
+  padding:.5rem .85rem;text-align:center;flex:1;min-width:110px;
+}
+.sc-v{font-size:1.3rem;font-weight:900;line-height:1}
+.sc-l{font-size:.62rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:.18rem}
+
+/* ── MAIN WRAP ── */
+.wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:.75rem 1rem 5rem}
+
+/* ── SECTION ── */
+section{margin-bottom:2rem;scroll-margin-top:68px}
+.sh{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.65rem 1.05rem;border-radius:11px 11px 0 0;
+  color:white;font-size:1rem;font-weight:800;
+}
+.sh.th  {background:linear-gradient(90deg,#134e4a,#0f766e)}
+.sh.qz  {background:linear-gradient(90deg,#713f12,#ca8a04)}
+.sh.mc  {background:linear-gradient(90deg,#312e81,#4f46e5)}
+.sh.ad  {background:linear-gradient(90deg,#831843,#be185d)}
+.sh.sn  {background:linear-gradient(90deg,#7c2d12,#ea580c)}
+.sh.rt  {background:linear-gradient(90deg,#4a1d96,#7c3aed)}
+.sb{
+  background:var(--s2);border:1px solid var(--border2);border-top:none;
+  border-radius:0 0 11px 11px;padding:1.1rem 1.2rem;
+}
+.sb h2{font-size:.95rem;font-weight:800;color:var(--text);margin:.9rem 0 .55rem;padding-bottom:.25rem;border-bottom:1px solid var(--border)}
+.sb h2:first-child{margin-top:0}
+.sb h3{font-size:.85rem;font-weight:700;color:var(--muted2);margin:.65rem 0 .3rem}
+.sb p,.sb li{font-size:.84rem;color:var(--muted2);margin-bottom:.3rem}
+.sb ul{padding-left:1.1rem}
+.sb li{margin-bottom:.2rem}
+.sb strong{color:var(--text)}
+.sb code{
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(255,255,255,.07);border:1px solid var(--border2);
+  border-radius:4px;padding:.1rem .35rem;font-size:.8rem;color:#7dd3fc;
+}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.65rem;margin:.55rem 0}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.6rem;margin:.55rem 0}
+.card{background:var(--s3);border:1px solid var(--border2);border-radius:9px;padding:.8rem .9rem}
+.card h3{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:.35rem}
+.card p,.card li{font-size:.78rem;color:var(--muted)}
+
+/* ── INFO BOX ── */
+.box{border-left:3px solid;padding:.6rem .9rem;border-radius:0 7px 7px 0;margin:.55rem 0;font-size:.83rem}
+.box.info  {border-color:var(--teal);  background:rgba(45,212,191,.07); color:var(--muted2)}
+.box.warn  {border-color:var(--orange);background:rgba(251,146,60,.07); color:var(--muted2)}
+.box.tip   {border-color:var(--blue);  background:rgba(99,102,241,.08); color:var(--muted2)}
+.box.mem   {border-color:var(--purple);background:rgba(168,85,247,.08); color:var(--muted2)}
+.box strong{display:block;margin-bottom:.2rem;color:var(--text)}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto;margin:.55rem 0;border-radius:9px;border:1px solid var(--border2)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:#1e1e35;color:var(--muted2);padding:.5rem .8rem;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+td{padding:.45rem .8rem;border-bottom:1px solid var(--border);color:var(--muted2)}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+td strong,td code{color:var(--text)}
+
+/* ── ADRESS PILL ── */
+.addr{
+  display:inline-block;font-family:'JetBrains Mono',monospace;
+  background:#090912;border:1px solid rgba(129,140,248,.3);
+  color:#7dd3fc;border-radius:6px;padding:.15rem .55rem;font-size:.82rem;
+}
+
+/* ──────────────────────────────────────────
+   QUIZ: Richtig/Falsch
+──────────────────────────────────────────── */
+.rf-q{
+  background:var(--s3);border:1px solid var(--border2);border-radius:9px;
+  padding:.75rem 1rem;margin:.45rem 0;cursor:pointer;user-select:none;
+  display:flex;align-items:flex-start;gap:.75rem;transition:border-color .15s;
+}
+.rf-q:hover{border-color:rgba(251,191,36,.3)}
+.rf-num{
+  min-width:24px;height:24px;border-radius:50%;
+  background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);
+  color:var(--yellow);font-size:.7rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.05rem;
+}
+.rf-text{font-size:.86rem;font-weight:600;color:var(--text);flex:1}
+.rf-icon{font-size:1.1rem;flex-shrink:0;opacity:0;transition:opacity .2s}
+.rf-explain{
+  display:none;margin-top:.5rem;font-size:.78rem;color:var(--muted2);
+  background:rgba(255,255,255,.03);border-radius:6px;padding:.5rem .7rem;
+  border-left:3px solid;
+}
+.rf-q.revealed .rf-icon{opacity:1}
+.rf-q.correct  .rf-explain{display:block;border-color:var(--green);background:rgba(74,222,128,.06)}
+.rf-q.wrong    .rf-explain{display:block;border-color:var(--red);  background:rgba(248,113,113,.06)}
+.rf-q.correct  {border-color:rgba(74,222,128,.3)!important}
+.rf-q.wrong    {border-color:rgba(248,113,113,.3)!important}
+
+/* ──────────────────────────────────────────
+   MULTIPLE CHOICE
+──────────────────────────────────────────── */
+.mc-block{
+  background:var(--s3);border:1px solid var(--border2);border-radius:10px;
+  padding:.85rem 1rem;margin:.5rem 0;
+}
+.mc-q{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.6rem}
+.mc-opts{display:flex;flex-direction:column;gap:.35rem}
+.mc-opt{
+  background:rgba(255,255,255,.04);border:1px solid var(--border2);
+  border-radius:7px;padding:.5rem .8rem;cursor:pointer;
+  font-size:.82rem;color:var(--muted2);transition:all .15s;
+  display:flex;align-items:center;gap:.55rem;
+}
+.mc-opt:hover{background:rgba(255,255,255,.08);color:var(--text)}
+.mc-opt.correct{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.4);color:var(--green)}
+.mc-opt.wrong  {background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3);color:var(--red)}
+.mc-opt.show-c {background:rgba(74,222,128,.07); border-color:rgba(74,222,128,.25);color:#86efac}
+.mc-opt-key{
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;font-weight:700;flex-shrink:0;
+}
+.mc-explain{
+  display:none;margin-top:.55rem;font-size:.78rem;color:var(--muted2);
+  padding:.45rem .7rem;border-radius:6px;border-left:3px solid var(--blue);
+  background:rgba(99,102,241,.07);
+}
+.mc-block.answered .mc-explain{display:block}
+
+/* ──────────────────────────────────────────
+   ADDRESS EXERCISES
+──────────────────────────────────────────── */
+.addr-ex{
+  background:var(--s3);border:1px solid var(--border2);border-radius:10px;
+  padding:.85rem 1rem;margin:.5rem 0;
+}
+.addr-ex-q{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.5rem}
+.addr-ex-input{
+  display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;
+}
+.addr-input{
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(255,255,255,.05);border:1.5px solid var(--border2);
+  border-radius:7px;padding:.42rem .75rem;color:var(--text);font-size:.85rem;
+  outline:none;transition:border-color .15s;min-width:220px;
+}
+.addr-input:focus{border-color:var(--blue)}
+.addr-input.ok {border-color:var(--green)!important;background:rgba(74,222,128,.07)!important}
+.addr-input.err{border-color:var(--red)!important;  background:rgba(248,113,113,.07)!important}
+.btn{
+  border:none;border-radius:7px;padding:.42rem 1rem;
+  font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:filter .15s,transform .12s;
+}
+.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn:active{transform:none}
+.btn-check{background:linear-gradient(135deg,var(--blue),#7c3aed);color:white;box-shadow:0 3px 10px rgba(99,102,241,.3)}
+.btn-reset{background:rgba(255,255,255,.07);color:var(--muted2)}
+.addr-feedback{display:none;margin-top:.45rem;font-size:.78rem;padding:.4rem .7rem;border-radius:6px;border-left:3px solid}
+.addr-feedback.ok {display:block;border-color:var(--green);background:rgba(74,222,128,.07);color:#86efac}
+.addr-feedback.err{display:block;border-color:var(--red);  background:rgba(248,113,113,.07);color:#fca5a5}
+
+/* ──────────────────────────────────────────
+   SUBNETTING
+──────────────────────────────────────────── */
+.sn-task{
+  background:var(--s3);border:1px solid var(--border2);border-radius:10px;
+  padding:.9rem 1rem;margin:.55rem 0;
+}
+.sn-title{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.sn-given{
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;
+  background:#090912;border:1px solid rgba(129,140,248,.25);
+  border-radius:7px;padding:.55rem .85rem;color:#7dd3fc;margin-bottom:.75rem;line-height:1.8;
+}
+.sn-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.5rem;margin-bottom:.6rem}
+.sn-field label{display:block;font-size:.67rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.22rem}
+.sn-field input{
+  font-family:'JetBrains Mono',monospace;width:100%;
+  background:rgba(255,255,255,.05);border:1.5px solid var(--border2);
+  border-radius:7px;padding:.4rem .7rem;color:var(--text);font-size:.83rem;
+  outline:none;transition:border-color .15s;
+}
+.sn-field input:focus{border-color:var(--orange)}
+.sn-field input.ok {border-color:var(--green)!important;background:rgba(74,222,128,.07)!important}
+.sn-field input.err{border-color:var(--red)!important;  background:rgba(248,113,113,.07)!important}
+.sn-result{display:none;margin-top:.55rem;font-size:.8rem;padding:.5rem .75rem;border-radius:7px;border-left:3px solid;line-height:1.6}
+.sn-result.show{display:block}
+.sn-result.pass{border-color:var(--green);background:rgba(74,222,128,.07);color:#86efac}
+.sn-result.fail{border-color:var(--orange);background:rgba(251,146,60,.07);color:#fdba74}
+.sn-result span{color:var(--text);font-weight:700}
+
+/* ──────────────────────────────────────────
+   ROUTING DIAGRAM + TABLE
+──────────────────────────────────────────── */
+.rt-scenario{
+  background:var(--s3);border:1px solid var(--border2);border-radius:11px;
+  padding:.9rem 1rem;margin:.55rem 0;
+}
+.rt-title{font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:.8rem}
+
+/* Network diagram */
+.net-diag{
+  background:#0a0a12;border:1px solid rgba(99,102,241,.2);
+  border-radius:10px;padding:1.1rem;margin-bottom:.85rem;overflow-x:auto;
+}
+.diag-svg{display:block;margin:0 auto;max-width:100%}
+
+/* Router/PC boxes in SVG */
+.r-box {fill:#1e1e35;stroke:#6366f1;stroke-width:1.5}
+.r-text{fill:#c7d2fe;font-family:'Inter',sans-serif;font-weight:700;font-size:13px}
+.r-sub {fill:#64748b;font-family:'JetBrains Mono',sans-serif;font-size:9.5px}
+.pc-box{fill:#13131f;stroke:#2dd4bf;stroke-width:1.5}
+.pc-txt{fill:#99f6e4;font-family:'Inter',sans-serif;font-weight:600;font-size:11px}
+.link  {stroke:#334155;stroke-width:2}
+.link-label{fill:#475569;font-family:'JetBrains Mono',sans-serif;font-size:8.5px}
+.net-label{fill:#818cf8;font-family:'JetBrains Mono',sans-serif;font-size:9px;font-weight:600}
+
+/* Routing table input */
+.rt-table-wrap{margin:.65rem 0}
+.rt-label{font-size:.72rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.35rem}
+.rt-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.rt-table th{background:#1a1a2e;color:var(--muted2);padding:.45rem .7rem;text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.rt-table td{padding:.35rem .4rem;border-bottom:1px solid var(--border)}
+.rt-table tr:last-child td{border-bottom:none}
+.rt-input{
+  font-family:'JetBrains Mono',monospace;width:100%;
+  background:rgba(255,255,255,.04);border:1.5px solid var(--border2);
+  border-radius:6px;padding:.3rem .55rem;color:var(--text);font-size:.78rem;
+  outline:none;transition:border-color .15s;
+}
+.rt-input:focus{border-color:var(--purple)}
+.rt-input.ok {border-color:var(--green)!important;background:rgba(74,222,128,.07)!important;color:#86efac!important}
+.rt-input.err{border-color:var(--red)!important;  background:rgba(248,113,113,.07)!important;color:#fca5a5!important}
+.rt-input[readonly]{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.2);color:#a5b4fc;cursor:default}
+.rt-result{display:none;margin-top:.55rem;font-size:.78rem;padding:.45rem .7rem;border-radius:7px;border-left:3px solid;line-height:1.7}
+.rt-result.show{display:block}
+.rt-result.pass{border-color:var(--green);background:rgba(74,222,128,.07);color:#86efac}
+.rt-result.fail{border-color:var(--orange);background:rgba(251,146,60,.07);color:#fdba74}
+
+/* btn row */
+.btn-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.65rem}
+
+/* progress bar */
+.prog-wrap{height:4px;background:rgba(255,255,255,.07);border-radius:999px;margin-top:.35rem}
+.prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .4s ease}
+
+/* ── FOOTER ── */
+footer{position:relative;z-index:1;text-align:center;padding:1.1rem;color:var(--muted);font-size:.72rem;border-top:1px solid var(--border);margin-top:2rem}
+
+@media(max-width:580px){
+  header h1{font-size:1.25rem}
+  .g2,.g3{grid-template-columns:1fr}
+  .sn-fields{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌐 IPv6 – Lernzettel & Interaktive Übungen</h1>
+  <p>Theorie · Richtig/Falsch · Multiple Choice · Adressen · Subnetting · Routing</p>
+  <a href="lernzettel.html" class="back-btn">← Lernzettel</a>
+</header>
+
+<nav>
+  <a href="#theorie" class="th">📖 Theorie</a>
+  <a href="#quiz"    class="qz">✅ Richtig/Falsch</a>
+  <a href="#mc"      class="mc">🎯 Multiple Choice</a>
+  <a href="#adressen" class="ad">🔢 Adressen</a>
+  <a href="#subnetting" class="sn">🔀 Subnetting</a>
+  <a href="#routing"  class="rt">🗺️ Routing</a>
+</nav>
+
+<!-- SCORE BAR -->
+<div class="scorebar" id="scorebar">
+  <div class="sc"><div class="sc-v" id="sc-rf"  style="color:var(--yellow)">0/15</div><div class="sc-l">Richtig/Falsch</div><div class="prog-wrap"><div class="prog-fill" id="p-rf" style="width:0%"></div></div></div>
+  <div class="sc"><div class="sc-v" id="sc-mc"  style="color:var(--blue2)"> 0/10</div><div class="sc-l">Multiple Choice</div><div class="prog-wrap"><div class="prog-fill" id="p-mc" style="width:0%"></div></div></div>
+  <div class="sc"><div class="sc-v" id="sc-ad"  style="color:var(--pink)">  0/8</div> <div class="sc-l">Adressen</div><div class="prog-wrap"><div class="prog-fill" id="p-ad" style="width:0%"></div></div></div>
+  <div class="sc"><div class="sc-v" id="sc-sn"  style="color:var(--orange)">0/4</div> <div class="sc-l">Subnetting</div><div class="prog-wrap"><div class="prog-fill" id="p-sn" style="width:0%"></div></div></div>
+  <div class="sc"><div class="sc-v" id="sc-rt"  style="color:var(--purple)">0/2</div> <div class="sc-l">Routing</div><div class="prog-wrap"><div class="prog-fill" id="p-rt" style="width:0%"></div></div></div>
+</div>
+
+<div class="wrap">
+
+<!-- ══════════════════════════════════════
+     THEORIE
+══════════════════════════════════════════ -->
+<section id="theorie">
+<div class="sh th">📖 IPv6 – Theorie</div>
+<div class="sb">
+
+<h2>Was ist IPv6 und warum?</h2>
+<div class="g2">
+  <div class="card"><h3>❓ Warum IPv6?</h3><p>IPv4 hat nur <strong>~4,3 Milliarden</strong> Adressen (32 Bit). Diese sind seit 2011 erschöpft. IPv6 löst dieses Problem mit <strong>128 Bit</strong> → 340 Sextillionen Adressen.</p></div>
+  <div class="card"><h3>📊 IPv4 vs IPv6</h3>
+    <p><strong>IPv4:</strong> 32 Bit, Dezimal, z.B. <code>192.168.1.1</code></p>
+    <p><strong>IPv6:</strong> 128 Bit, Hexadezimal, z.B. <code>2001:db8::1</code></p>
+    <p><strong>Kein Broadcast</strong> in IPv6 – nur Multicast &amp; Anycast!</p>
+  </div>
+</div>
+
+<h2>Adressaufbau</h2>
+<div class="box info"><strong>📐 Struktur einer IPv6-Adresse</strong>
+128 Bit, aufgeteilt in <strong>8 Gruppen</strong> zu je <strong>16 Bit</strong> (= 4 Hex-Zeichen), getrennt durch Doppelpunkte:<br><br>
+<code>2001:0db8:0000:0042:0000:8a2e:0370:7334</code><br>
+<span style="font-size:.78rem;color:var(--muted2)">→ 8 Gruppen × 16 Bit = 128 Bit</span>
+</div>
+<h3>Kürzungsregeln</h3>
+<div class="g2">
+  <div class="card"><h3>Regel 1 – Führende Nullen weglassen</h3>
+    <p><code>0042</code> → <code>42</code></p>
+    <p><code>0000</code> → <code>0</code></p>
+    <p><code>0001</code> → <code>1</code></p>
+    <p>Gilt <strong>pro Gruppe</strong>, nicht übergreifend.</p>
+  </div>
+  <div class="card"><h3>Regel 2 – :: für aufeinanderfolgende Nullgruppen</h3>
+    <p><code>2001:0db8:<strong>0000:0000:0000</strong>:0001</code></p>
+    <p>→ <code>2001:db8<strong>::</strong>1</code></p>
+    <p><strong>:: darf nur einmal</strong> in einer Adresse vorkommen!</p>
+  </div>
+</div>
+<div class="box warn"><strong>⚠️ Fehler: :: zweimal verwenden!</strong>
+<code>2001::db8::1</code> ist <strong>UNGÜLTIG</strong> – unklar, wie viele Nullen ersetzt werden. Immer nur einmal <code>::</code> pro Adresse!</div>
+
+<h2>Adresstypen</h2>
+<div class="tw"><table>
+  <tr><th>Typ</th><th>Präfix</th><th>Bedeutung</th><th>Beispiel</th></tr>
+  <tr><td><strong>Global Unicast</strong></td><td><code>2000::/3</code></td><td>Öffentliche Adresse (wie IPv4 public), beginnt mit 2 oder 3</td><td><code>2001:db8::1</code></td></tr>
+  <tr><td><strong>Link-Local</strong></td><td><code>fe80::/10</code></td><td>Nur im lokalen Netzwerksegment gültig – wird automatisch generiert</td><td><code>fe80::1</code></td></tr>
+  <tr><td><strong>Unique Local</strong></td><td><code>fc00::/7</code></td><td>Private Adressen (wie IPv4 RFC1918), beginnt mit fc oder fd</td><td><code>fd00::1</code></td></tr>
+  <tr><td><strong>Loopback</strong></td><td><code>::1/128</code></td><td>Lokale Schnittstelle (wie 127.0.0.1)</td><td><code>::1</code></td></tr>
+  <tr><td><strong>Unspecified</strong></td><td><code>::/128</code></td><td>Kein Ziel – wird bei DHCP-Anfragen verwendet</td><td><code>::</code></td></tr>
+  <tr><td><strong>Multicast</strong></td><td><code>ff00::/8</code></td><td>Gruppe von Empfängern (ersetzt Broadcast)</td><td><code>ff02::1</code></td></tr>
+  <tr><td><strong>Anycast</strong></td><td>–</td><td>Ein Paket → nächstgelegener Empfänger einer Gruppe</td><td>–</td></tr>
+</table></div>
+<div class="box mem"><strong>🧠 Merkhilfe Präfixe</strong>
+<strong>2</strong>xxx/<strong>3</strong>xxx = Global (öffentlich) | <strong>fe80</strong> = Link-Local (automatisch) | <strong>fd</strong>xx = Unique Local (privat) | <strong>ff</strong>xx = Multicast | <strong>::1</strong> = Loopback</div>
+
+<h2>Besondere Eigenschaften von IPv6</h2>
+<div class="g3">
+  <div class="card"><h3>🔄 SLAAC</h3><p>Stateless Address Autoconfiguration – Gerät generiert automatisch eine IPv6-Adresse aus dem Netzpräfix + MAC-Adresse (EUI-64). Kein DHCP nötig!</p></div>
+  <div class="card"><h3>🔍 NDP statt ARP</h3><p>Neighbor Discovery Protocol ersetzt ARP. Nutzt ICMPv6-Nachrichten: Neighbor Solicitation &amp; Neighbor Advertisement.</p></div>
+  <div class="card"><h3>🔒 IPsec</h3><p>In IPv6 standardmäßig unterstützt (war optional in IPv4). Ermöglicht verschlüsselte und authentifizierte Kommunikation.</p></div>
+  <div class="card"><h3>📦 Kein NAT</h3><p>Durch die enorme Adresszahl braucht IPv6 kein NAT. Jedes Gerät bekommt eine globale Adresse.</p></div>
+  <div class="card"><h3>🔁 Kein Broadcast</h3><p>IPv6 hat keinen Broadcast. Stattdessen: Multicast (ff02::1 = alle Knoten, ff02::2 = alle Router).</p></div>
+  <div class="card"><h3>⚡ Effizienterer Header</h3><p>IPv6-Header ist vereinfacht (40 Byte fix). Keine Checksumme, keine Fragmentierung durch Router – schnellere Weiterleitung.</p></div>
+</div>
+
+<h2>Präfix-Notation (CIDR)</h2>
+<p style="margin:.4rem 0 .6rem">Wie bei IPv4 gibt die Präfixlänge an, wie viele Bits das <strong>Netz</strong> sind:</p>
+<div class="box tip"><strong>Beispiel: <code>2001:db8:1::/48</code></strong><br>
+→ Die ersten <strong>48 Bit</strong> sind der Netzanteil → <strong>80 Bit</strong> bleiben für Subnetze &amp; Hosts<br>
+→ <strong>/64</strong> ist der Standard für ein LAN-Subnetz (64 Bit Netz + 64 Bit Interface-ID)
+</div>
+
+</div><!-- /sb -->
+</section>
+
+<!-- ══════════════════════════════════════
+     QUIZ RICHTIG / FALSCH
+══════════════════════════════════════════ -->
+<section id="quiz">
+<div class="sh qz">✅ Richtig oder Falsch? – Klicke zum Aufdecken</div>
+<div class="sb">
+<p style="margin-bottom:.65rem;font-size:.82rem;color:var(--muted2)">Klicke auf eine Aussage um zu sehen ob sie richtig oder falsch ist. ✅ = Richtig &nbsp; ❌ = Falsch</p>
+
+<div id="rf-container"></div>
+
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     MULTIPLE CHOICE
+══════════════════════════════════════════ -->
+<section id="mc">
+<div class="sh mc">🎯 Multiple Choice – Eine Antwort ist richtig</div>
+<div class="sb">
+<div id="mc-container"></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     ADRESSEN ÜBUNGEN
+══════════════════════════════════════════ -->
+<section id="adressen">
+<div class="sh ad">🔢 Adressen – Kürzen, Erweitern, Prüfen</div>
+<div class="sb">
+<p style="margin-bottom:.65rem;font-size:.82rem;color:var(--muted2)">Gib deine Antwort ein und klicke „Prüfen". Groß-/Kleinschreibung egal.</p>
+<div id="addr-container"></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     SUBNETTING
+══════════════════════════════════════════ -->
+<section id="subnetting">
+<div class="sh sn">🔀 Subnetting – Berechne die Subnetze</div>
+<div class="sb">
+<div class="box info"><strong>💡 Formel</strong> Anzahl Subnetze = 2^(neue Präfixlänge − alte Präfixlänge) | Hosts pro Subnetz = 2^(128 − Präfixlänge)</div>
+<div id="sn-container"></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════
+     ROUTING
+══════════════════════════════════════════ -->
+<section id="routing">
+<div class="sh rt">🗺️ Routing – Fülle die Routing-Tabellen aus</div>
+<div class="sb">
+<div class="box mem"><strong>🧠 Routing-Tabelle Aufbau</strong>
+Jede Zeile: <strong>Zielnetz (Destination)</strong> | <strong>Next-Hop</strong> (nächster Router) | <strong>Interface</strong> (ausgehende Schnittstelle)<br>
+Direkt verbundene Netze: Next-Hop = <code>directly connected</code> (oder leer)</div>
+<div id="rt-container"></div>
+</div>
+</section>
+
+</div><!-- /wrap -->
+<footer>IPv6 Lernzettel &amp; Übungen – Alle Antworten werden lokal geprüft</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+
+// ── RICHTIG / FALSCH ──
+const RF = [
+  {s:"IPv6-Adressen sind 128 Bit lang.",         c:true,  e:"Richtig! 128 Bit = 8 Gruppen × 16 Bit."},
+  {s:"IPv6 verwendet Broadcast.",                 c:false, e:"Falsch! IPv6 hat keinen Broadcast – stattdessen Multicast und Anycast."},
+  {s:"In einer IPv6-Adresse darf :: nur einmal vorkommen.", c:true, e:"Richtig! Sonst wäre unklar, wie viele Nullgruppen ersetzt werden."},
+  {s:"Die Loopback-Adresse in IPv6 ist ::1.",     c:true,  e:"Richtig! Entspricht 127.0.0.1 in IPv4."},
+  {s:"Link-Local-Adressen beginnen immer mit fe80.", c:true, e:"Richtig! Präfix fe80::/10 – automatisch auf jeder Schnittstelle."},
+  {s:"2001:db8::1::2 ist eine gültige IPv6-Adresse.", c:false, e:"Falsch! :: darf nur einmal vorkommen. Diese Adresse ist ungültig."},
+  {s:"Global Unicast Adressen beginnen mit 2xxx oder 3xxx.", c:true, e:"Richtig! Präfix 2000::/3 bedeutet die ersten 3 Bits sind 001 → beginnt mit 2 oder 3."},
+  {s:"IPv6 braucht NAT, da Adressen knapp sind.",  c:false, e:"Falsch! IPv6 hat genug Adressen für jedes Gerät. NAT ist nicht nötig."},
+  {s:"SLAAC ermöglicht automatische Adresskonfiguration ohne DHCP.", c:true, e:"Richtig! Stateless Address Autoconfiguration nutzt Router Advertisements + MAC-Adresse."},
+  {s:"NDP (Neighbor Discovery Protocol) ersetzt ARP in IPv6.", c:true, e:"Richtig! NDP nutzt ICMPv6 statt ARP-Broadcasts."},
+  {s:"Ein /64-Subnetz hat 64 Bit für die Interface-ID.", c:true, e:"Richtig! Bei /64: 64 Bit Netzanteil + 64 Bit Interface-ID. Das ist der Standard für LANs."},
+  {s:"fd00::1 ist eine öffentliche globale IPv6-Adresse.", c:false, e:"Falsch! fd00:: gehört zum Unique-Local-Bereich (fc00::/7) – das sind private Adressen."},
+  {s:"ff02::1 ist die Multicast-Adresse für alle IPv6-Knoten.", c:true, e:"Richtig! ff02::1 = All Nodes Multicast (wie ein Broadcast-Ersatz im lokalen Segment)."},
+  {s:"IPv6-Router dürfen Pakete fragmentieren.", c:false, e:"Falsch! In IPv6 fragmentieren nur die Endgeräte (nicht Router). Router verwerfen zu große Pakete und senden ICMPv6 Packet Too Big."},
+  {s:"Die IPv6-Adresse :: (alle Nullen) ist die 'Unspecified Address'.", c:true, e:"Richtig! :: = ::/128 wird verwendet, wenn noch keine Adresse vergeben ist (z.B. bei DHCPv6-Anfragen)."},
+];
+
+// ── MULTIPLE CHOICE ──
+const MC = [
+  {q:"Wie viele Bit hat eine IPv6-Adresse?",
+   opts:["32 Bit","64 Bit","128 Bit","256 Bit"], c:2,
+   e:"128 Bit – aufgeteilt in 8 Gruppen zu je 16 Bit (4 Hex-Zeichen)."},
+  {q:"Welche IPv6-Adresse ist die korrekte Kurzschreibweise von 2001:0db8:0000:0000:0000:0000:0000:0001?",
+   opts:["2001:db8:0:0:0:0:0:1","2001:db8::1","2001:0db8::0001","2001:db8::0:1"], c:1,
+   e:"2001:db8::1 – führende Nullen in jeder Gruppe weglassen UND die längste Folge von Nullgruppen durch :: ersetzen."},
+  {q:"Welcher Adresstyp ersetzt den IPv4-Broadcast in IPv6?",
+   opts:["Anycast","Unicast","Multicast","Broadcast-Unicast"], c:2,
+   e:"Multicast! Für alle Knoten im Segment: ff02::1. Es gibt keinen Broadcast mehr in IPv6."},
+  {q:"Was ist der Standardpräfix für ein LAN-Subnetz in IPv6?",
+   opts:["/32","/48","/64","/128"], c:2,
+   e:"/64 ist der Standard: 64 Bit Netzanteil + 64 Bit Interface-ID (für EUI-64 SLAAC)."},
+  {q:"Welches Protokoll ersetzt ARP in IPv6?",
+   opts:["DHCPv6","OSPF","NDP (Neighbor Discovery Protocol)","ICMPv4"], c:2,
+   e:"NDP (Neighbor Discovery Protocol) nutzt ICMPv6-Nachrichten (Neighbor Solicitation/Advertisement) statt ARP."},
+  {q:"Mit welchem Präfix beginnen Link-Local-Adressen?",
+   opts:["::1","fe80::/10","fc00::/7","ff00::/8"], c:1,
+   e:"fe80::/10 – Link-Local-Adressen werden automatisch auf jeder Schnittstelle konfiguriert."},
+  {q:"Wie viele IPv6-Adressen gibt es insgesamt?",
+   opts:["4,3 Milliarden","340 Billionen","340 Sextillionen (3,4×10³⁸)","1 Trillion"], c:2,
+   e:"2¹²⁸ ≈ 3,4 × 10³⁸ – das sind 340 Sextillionen Adressen!"},
+  {q:"Was ist SLAAC?",
+   opts:["Ein Routing-Protokoll","Stateless Address Autoconfiguration – automatische Adresskonfiguration","Ein Sicherheitsprotokoll","Ein DNS-Erweiterung"], c:1,
+   e:"SLAAC = Stateless Address Autoconfiguration. Das Gerät erstellt seine Adresse selbst aus Netzpräfix (Router Advertisement) + Interface-ID (aus MAC)."},
+  {q:"Welche Adresse ist die Loopback-Adresse in IPv6?",
+   opts:["127.0.0.1","fe80::1","::1","0:0:0:0:0:0:0:0"], c:2,
+   e:"::1 ist die IPv6-Loopback-Adresse (entspricht 127.0.0.1 in IPv4). Die Langform: 0000:0000:0000:0000:0000:0000:0000:0001."},
+  {q:"Welcher Befehl zeigt IPv6-Adressen auf einem Linux-System an?",
+   opts:["ipconfig /6","ip addr","ifconfig -6","show ipv6"], c:1,
+   e:"ip addr zeigt alle Netzwerkadressen (IPv4 und IPv6). Alternativ: ip -6 addr für nur IPv6."},
+];
+
+// ── ADRESSEN ÜBUNGEN ──
+const ADDR = [
+  {type:"kürzen",
+   q:"Kürze diese Adresse so kurz wie möglich:",
+   given:"2001:0db8:0000:0000:0000:0000:0000:0001",
+   answers:["2001:db8::1"],
+   hint:"Führende Nullen weglassen + längste Nullsequenz durch :: ersetzen"},
+  {type:"kürzen",
+   q:"Kürze diese Adresse so kurz wie möglich:",
+   given:"fe80:0000:0000:0000:0202:b3ff:fe1e:8329",
+   answers:["fe80::202:b3ff:fe1e:8329"],
+   hint:"Nur die erste Nullgruppe kann durch :: ersetzt werden (nur einmal erlaubt)"},
+  {type:"kürzen",
+   q:"Kürze diese Adresse so kurz wie möglich:",
+   given:"2001:0db8:0001:0000:0000:0000:0000:0001",
+   answers:["2001:db8:1::1"],
+   hint:"Gruppe 0001 → 1, dann die vier Nullgruppen durch :: ersetzen"},
+  {type:"erweitern",
+   q:"Schreibe diese Adresse vollständig aus (alle 32 Hex-Zeichen mit Doppelpunkten):",
+   given:"::1",
+   answers:["0000:0000:0000:0000:0000:0000:0000:0001"],
+   hint:":: steht für alle fehlenden Nullgruppen"},
+  {type:"erweitern",
+   q:"Schreibe diese Adresse vollständig aus:",
+   given:"2001:db8::1",
+   answers:["2001:0db8:0000:0000:0000:0000:0000:0001"],
+   hint:"db8 → 0db8, :: ersetzt 5 Nullgruppen"},
+  {type:"gültig",
+   q:"Ist diese Adresse gültig? (ja / nein)",
+   given:"2001:db8::1::2",
+   answers:["nein","no"],
+   hint:"Wegen zweimaligem :: ist diese Adresse UNGÜLTIG"},
+  {type:"gültig",
+   q:"Ist diese Adresse gültig? (ja / nein)",
+   given:"fe80::abcd:1234",
+   answers:["ja","yes"],
+   hint:"fe80::abcd:1234 ist eine gültige Link-Local-Adresse"},
+  {type:"typ",
+   q:"Welchem Adresstyp gehört diese Adresse an? (global / link-local / loopback / multicast / unique-local)",
+   given:"ff02::1",
+   answers:["multicast"],
+   hint:"ff02:: gehört zum Multicast-Bereich ff00::/8"},
+];
+
+// ── SUBNETTING ──
+const SN = [
+  {
+    title:"Aufgabe 1 – Subnetze berechnen",
+    desc:`Gegeben: Netzwerk 2001:db8:a::/48\nAufgabe: Das Netz wird in /64-Subnetze unterteilt.`,
+    fields:[
+      {l:"Anzahl möglicher /64 Subnetze",  k:"count",  a:["65536","2^16","65.536"]},
+      {l:"Erstes Subnetz",                 k:"sub0",   a:["2001:db8:a:0::/64","2001:0db8:000a:0000::/64"]},
+      {l:"Zweites Subnetz",                k:"sub1",   a:["2001:db8:a:1::/64","2001:0db8:000a:0001::/64"]},
+      {l:"Letztes Subnetz",                k:"sublast",a:["2001:db8:a:ffff::/64","2001:0db8:000a:ffff::/64"]},
+    ],
+    explain:"Von /48 → /64: 64-48 = 16 neue Bits → 2¹⁶ = 65536 Subnetze. Subnetz-IDs zählen von 0000 bis ffff."
+  },
+  {
+    title:"Aufgabe 2 – Hosts berechnen",
+    desc:`Gegeben: Subnetz 2001:db8:1:2::/64\nWie viele Interface-IDs (Hosts) sind in diesem Subnetz möglich?`,
+    fields:[
+      {l:"Anzahl möglicher Hosts (Interface-IDs)", k:"hosts", a:["18446744073709551616","2^64"]},
+      {l:"Netzanteil (Bits)",                      k:"netbits",a:["64"]},
+      {l:"Interface-ID Anteil (Bits)",              k:"hostbits",a:["64"]},
+    ],
+    explain:"128 − 64 = 64 Bit für Interface-IDs → 2⁶⁴ = 18.446.744.073.709.551.616 Adressen pro Subnetz."
+  },
+  {
+    title:"Aufgabe 3 – Subnetz bestimmen",
+    desc:`Gegeben: Adresse 2001:db8:0:3::5/64\nBestimme das Subnetz und die Interface-ID.`,
+    fields:[
+      {l:"Subnetz (Netzadresse)",   k:"net",  a:["2001:db8:0:3::/64","2001:0db8:0000:0003::/64"]},
+      {l:"Interface-ID (kurz)",     k:"iid",  a:["::5","0000:0000:0000:0005"]},
+      {l:"Nächstes Subnetz",        k:"next", a:["2001:db8:0:4::/64","2001:0db8:0000:0004::/64"]},
+    ],
+    explain:"Bei /64: erste 64 Bit = Netz = 2001:db8:0:3::, letzte 64 Bit = Interface-ID = ::5. Nächstes Subnetz: letzten Netzanteil +1 → :4:."
+  },
+  {
+    title:"Aufgabe 4 – Präfixlänge bestimmen",
+    desc:`Gegeben: Netz 2001:db8::/32 soll in 256 gleichgroße Subnetze geteilt werden.\nWelche neue Präfixlänge ist nötig?`,
+    fields:[
+      {l:"Neue Präfixlänge",              k:"pfx",  a:["/40","40"]},
+      {l:"Bits die für Subnetze genutzt werden", k:"snbits",a:["8"]},
+      {l:"Bits für Interface-IDs",        k:"idbits",a:["88"]},
+    ],
+    explain:"256 = 2⁸ → 8 neue Bits nötig → /32 + 8 = /40. Interface-IDs: 128 − 40 = 88 Bit."
+  },
+];
+
+// ── ROUTING SZENARIEN ──
+const RT_SCENES = [
+  {
+    title:"Szenario 1 – Zwei Router",
+    desc:"Fülle die Routing-Tabelle für Router R1 und Router R2 aus. Direkt verbundene Netze haben keinen Next-Hop – trage 'direct' ein.",
+    svg:`<svg class="diag-svg" viewBox="0 0 620 200" width="620" height="200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Netz 1 -->
+  <rect x="10" y="75" width="100" height="50" rx="6" class="pc-box"/>
+  <text x="60" y="97" text-anchor="middle" class="pc-txt">PC1</text>
+  <text x="60" y="112" text-anchor="middle" class="r-sub">2001:db8:1::10</text>
+  <!-- Link PC1-R1 -->
+  <line x1="110" y1="100" x2="175" y2="100" class="link"/>
+  <text x="140" y="90" text-anchor="middle" class="net-label">2001:db8:1::/64</text>
+  <!-- R1 -->
+  <rect x="175" y="65" width="110" height="70" rx="8" class="r-box"/>
+  <text x="230" y="92" text-anchor="middle" class="r-text">R1</text>
+  <text x="230" y="107" text-anchor="middle" class="r-sub">eth0: 2001:db8:1::1</text>
+  <text x="230" y="120" text-anchor="middle" class="r-sub">eth1: 2001:db8:2::1</text>
+  <!-- Link R1-R2 -->
+  <line x1="285" y1="100" x2="345" y2="100" class="link"/>
+  <text x="315" y="90" text-anchor="middle" class="net-label">2001:db8:2::/64</text>
+  <!-- R2 -->
+  <rect x="345" y="65" width="110" height="70" rx="8" class="r-box"/>
+  <text x="400" y="92" text-anchor="middle" class="r-text">R2</text>
+  <text x="400" y="107" text-anchor="middle" class="r-sub">eth0: 2001:db8:2::2</text>
+  <text x="400" y="120" text-anchor="middle" class="r-sub">eth1: 2001:db8:3::1</text>
+  <!-- Link R2-PC2 -->
+  <line x1="455" y1="100" x2="515" y2="100" class="link"/>
+  <text x="485" y="90" text-anchor="middle" class="net-label">2001:db8:3::/64</text>
+  <!-- PC2 -->
+  <rect x="515" y="75" width="95" height="50" rx="6" class="pc-box"/>
+  <text x="562" y="97" text-anchor="middle" class="pc-txt">PC2</text>
+  <text x="562" y="112" text-anchor="middle" class="r-sub">2001:db8:3::10</text>
+</svg>`,
+    tables:[
+      {
+        router:"R1",
+        hint:"R1 kennt direkt: Netz 1 (eth0) und Netz 2 (eth1). Für Netz 3 muss es über R2 routen.",
+        rows:[
+          {dest:"2001:db8:1::/64", nexthop_ans:["direct","directly connected",""],  iface_ans:["eth0"], nexthop_ro:true},
+          {dest:"2001:db8:2::/64", nexthop_ans:["direct","directly connected",""],  iface_ans:["eth1"], nexthop_ro:true},
+          {dest:"2001:db8:3::/64", nexthop_ans:["2001:db8:2::2"],                    iface_ans:["eth1"]},
+        ]
+      },
+      {
+        router:"R2",
+        hint:"R2 kennt direkt: Netz 2 (eth0) und Netz 3 (eth1). Für Netz 1 muss es über R1 routen.",
+        rows:[
+          {dest:"2001:db8:1::/64", nexthop_ans:["2001:db8:2::1"],                    iface_ans:["eth0"]},
+          {dest:"2001:db8:2::/64", nexthop_ans:["direct","directly connected",""],   iface_ans:["eth0"], nexthop_ro:true},
+          {dest:"2001:db8:3::/64", nexthop_ans:["direct","directly connected",""],   iface_ans:["eth1"], nexthop_ro:true},
+        ]
+      }
+    ]
+  },
+  {
+    title:"Szenario 2 – Drei Router (Stern)",
+    desc:"R2 ist der Kern-Router. Fülle die Routing-Tabellen für alle drei Router aus.",
+    svg:`<svg class="diag-svg" viewBox="0 0 620 310" width="620" height="310" xmlns="http://www.w3.org/2000/svg">
+  <!-- R2 center -->
+  <rect x="245" y="120" width="120" height="70" rx="8" class="r-box"/>
+  <text x="305" y="148" text-anchor="middle" class="r-text">R2 (Kern)</text>
+  <text x="305" y="163" text-anchor="middle" class="r-sub">eth0: 2001:db8:12::2</text>
+  <text x="305" y="176" text-anchor="middle" class="r-sub">eth1: 2001:db8:23::1</text>
+  <text x="305" y="189" text-anchor="middle" class="r-sub">eth2: 2001:db8:24::1</text>
+  <!-- R1 left -->
+  <rect x="40" y="120" width="115" height="70" rx="8" class="r-box"/>
+  <text x="97" y="148" text-anchor="middle" class="r-text">R1</text>
+  <text x="97" y="163" text-anchor="middle" class="r-sub">eth0: 2001:db8:1::1</text>
+  <text x="97" y="176" text-anchor="middle" class="r-sub">eth1: 2001:db8:12::1</text>
+  <!-- Link R1-R2 -->
+  <line x1="155" y1="155" x2="245" y2="155" class="link"/>
+  <text x="200" y="147" text-anchor="middle" class="net-label">2001:db8:12::/64</text>
+  <!-- PC1 left -->
+  <rect x="40" y="30" width="115" height="50" rx="6" class="pc-box"/>
+  <text x="97" y="52" text-anchor="middle" class="pc-txt">PC1</text>
+  <text x="97" y="67" text-anchor="middle" class="r-sub">2001:db8:1::10/64</text>
+  <line x1="97" y1="80" x2="97" y2="120" class="link"/>
+  <text x="112" y="105" class="net-label">2001:db8:1::/64</text>
+  <!-- R3 top-right -->
+  <rect x="460" y="40" width="120" height="70" rx="8" class="r-box"/>
+  <text x="520" y="68" text-anchor="middle" class="r-text">R3</text>
+  <text x="520" y="83" text-anchor="middle" class="r-sub">eth0: 2001:db8:3::1</text>
+  <text x="520" y="96" text-anchor="middle" class="r-sub">eth1: 2001:db8:23::2</text>
+  <!-- Link R2-R3 -->
+  <line x1="365" y1="140" x2="460" y2="80" class="link"/>
+  <text x="420" y="108" text-anchor="middle" class="net-label">2001:db8:23::/64</text>
+  <!-- PC3 -->
+  <rect x="460" y="150" width="120" height="50" rx="6" class="pc-box"/>
+  <text x="520" y="172" text-anchor="middle" class="pc-txt">PC3</text>
+  <text x="520" y="187" text-anchor="middle" class="r-sub">2001:db8:3::10/64</text>
+  <line x1="520" y1="150" x2="520" y2="110" class="link"/>
+  <text x="536" y="135" class="net-label">2001:db8:3::/64</text>
+  <!-- R4 bottom-right -->
+  <rect x="460" y="230" width="120" height="70" rx="8" class="r-box"/>
+  <text x="520" y="258" text-anchor="middle" class="r-text">R4</text>
+  <text x="520" y="273" text-anchor="middle" class="r-sub">eth0: 2001:db8:4::1</text>
+  <text x="520" y="286" text-anchor="middle" class="r-sub">eth1: 2001:db8:24::2</text>
+  <!-- Link R2-R4 -->
+  <line x1="365" y1="170" x2="460" y2="260" class="link"/>
+  <text x="408" y="222" text-anchor="middle" class="net-label">2001:db8:24::/64</text>
+  <!-- PC4 -->
+  <rect x="355" y="262" width="90" height="48" rx="6" class="pc-box"/>
+  <text x="400" y="283" text-anchor="middle" class="pc-txt">PC4</text>
+  <text x="400" y="298" text-anchor="middle" class="r-sub">2001:db8:4::10</text>
+  <line x1="445" y1="276" x2="460" y2="265" class="link"/>
+  <text x="442" y="256" class="net-label">2001:db8:4::/64</text>
+</svg>`,
+    tables:[
+      {
+        router:"R1",
+        hint:"R1 ist direkt mit Netz 1 (eth0) und dem Backbone zu R2 (eth1) verbunden. Alles andere über R2.",
+        rows:[
+          {dest:"2001:db8:1::/64",  nexthop_ans:["direct",""],  iface_ans:["eth0"], nexthop_ro:true},
+          {dest:"2001:db8:12::/64", nexthop_ans:["direct",""],  iface_ans:["eth1"], nexthop_ro:true},
+          {dest:"2001:db8:3::/64",  nexthop_ans:["2001:db8:12::2"], iface_ans:["eth1"]},
+          {dest:"2001:db8:4::/64",  nexthop_ans:["2001:db8:12::2"], iface_ans:["eth1"]},
+        ]
+      },
+      {
+        router:"R2 (Kern)",
+        hint:"R2 ist direkt mit allen drei Backbone-Netzen verbunden. Für Endnetze (1, 3, 4) muss er über die jeweiligen Router routen.",
+        rows:[
+          {dest:"2001:db8:1::/64",  nexthop_ans:["2001:db8:12::1"], iface_ans:["eth0"]},
+          {dest:"2001:db8:12::/64", nexthop_ans:["direct",""],       iface_ans:["eth0"], nexthop_ro:true},
+          {dest:"2001:db8:23::/64", nexthop_ans:["direct",""],       iface_ans:["eth1"], nexthop_ro:true},
+          {dest:"2001:db8:24::/64", nexthop_ans:["direct",""],       iface_ans:["eth2"], nexthop_ro:true},
+          {dest:"2001:db8:3::/64",  nexthop_ans:["2001:db8:23::2"], iface_ans:["eth1"]},
+          {dest:"2001:db8:4::/64",  nexthop_ans:["2001:db8:24::2"], iface_ans:["eth2"]},
+        ]
+      },
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════
+// SCORE
+// ═══════════════════════════════════════════════════════
+const score = {rf:0,mc:0,ad:0,sn:0,rt:0};
+const total  = {rf:RF.length, mc:MC.length, ad:ADDR.length, sn:SN.length, rt:RT_SCENES.length};
+
+function updateScore(key, val){
+  score[key] = val;
+  document.getElementById('sc-'+key).textContent = val+'/'+total[key];
+  document.getElementById('p-'+key).style.width  = Math.round(val/total[key]*100)+'%';
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER: RICHTIG / FALSCH
+// ═══════════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('rf-container');
+  let correct = 0;
+  RF.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className = 'rf-q';
+    div.innerHTML = `
+      <div class="rf-num">${i+1}</div>
+      <div style="flex:1">
+        <div class="rf-text">${item.s}</div>
+        <div class="rf-explain">${item.e}</div>
+      </div>
+      <div class="rf-icon">${item.c?'✅':'❌'}</div>`;
+    div.addEventListener('click',function(){
+      if(this.classList.contains('revealed'))return;
+      this.classList.add('revealed', item.c?'correct':'wrong');
+      this.querySelector('.rf-explain').style.color = item.c?'#86efac':'#fca5a5';
+      if(item.c) correct++;
+      updateScore('rf', correct);
+    });
+    c.appendChild(div);
+  });
+})();
+
+// ═══════════════════════════════════════════════════════
+// RENDER: MULTIPLE CHOICE
+// ═══════════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('mc-container');
+  let correct = 0;
+  MC.forEach((item,qi)=>{
+    const div = document.createElement('div');
+    div.className = 'mc-block';
+    const keys = ['A','B','C','D'];
+    const optsHTML = item.opts.map((o,oi)=>`
+      <div class="mc-opt" data-qi="${qi}" data-oi="${oi}">
+        <span class="mc-opt-key">${keys[oi]}</span>${o}
+      </div>`).join('');
+    div.innerHTML = `
+      <div class="mc-q">❓ ${item.q}</div>
+      <div class="mc-opts">${optsHTML}</div>
+      <div class="mc-explain">💡 ${item.e}</div>`;
+    c.appendChild(div);
+    div.querySelectorAll('.mc-opt').forEach(opt=>{
+      opt.addEventListener('click',function(){
+        const block = this.closest('.mc-block');
+        if(block.classList.contains('answered'))return;
+        block.classList.add('answered');
+        const oi = parseInt(this.dataset.oi);
+        if(oi===item.c){
+          this.classList.add('correct');
+          correct++;
+          updateScore('mc',correct);
+        } else {
+          this.classList.add('wrong');
+          block.querySelectorAll('.mc-opt')[item.c].classList.add('show-c');
+        }
+      });
+    });
+  });
+})();
+
+// ═══════════════════════════════════════════════════════
+// RENDER: ADRESSEN
+// ═══════════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('addr-container');
+  let correct = 0;
+  const solved = new Set();
+  ADDR.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className = 'addr-ex';
+    div.innerHTML = `
+      <div class="addr-ex-q">${i+1}. ${item.q}<br>
+        <span class="addr" style="margin-top:.35rem;display:inline-block">${item.given}</span>
+      </div>
+      <div class="addr-ex-input">
+        <input class="addr-input" id="ai-${i}" placeholder="Antwort eingeben…" autocomplete="off"/>
+        <button class="btn btn-check" onclick="checkAddr(${i})">Prüfen</button>
+        <button class="btn btn-reset" onclick="resetAddr(${i})">↺</button>
+      </div>
+      <div class="addr-feedback" id="af-${i}"></div>`;
+    c.appendChild(div);
+  });
+
+  window.checkAddr = function(i){
+    if(solved.has(i))return;
+    const inp = document.getElementById('ai-'+i);
+    const fb  = document.getElementById('af-'+i);
+    const val = inp.value.trim().toLowerCase();
+    const ok  = ADDR[i].answers.some(a=>a.toLowerCase()===val);
+    inp.className = 'addr-input '+(ok?'ok':'err');
+    fb.className  = 'addr-feedback '+(ok?'ok':'err');
+    fb.textContent= ok ? '✅ Richtig!' : `❌ Nicht ganz. Hinweis: ${ADDR[i].hint}`;
+    if(ok && !solved.has(i)){ solved.add(i); correct++; updateScore('ad',correct); }
+  };
+  window.resetAddr = function(i){
+    const inp = document.getElementById('ai-'+i);
+    const fb  = document.getElementById('af-'+i);
+    inp.value=''; inp.className='addr-input'; fb.className='addr-feedback';
+  };
+})();
+
+// ═══════════════════════════════════════════════════════
+// RENDER: SUBNETTING
+// ═══════════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('sn-container');
+  let correct = 0;
+  const solved = new Set();
+
+  SN.forEach((task,ti)=>{
+    const div = document.createElement('div');
+    div.className = 'sn-task';
+    const fieldsHTML = task.fields.map((f,fi)=>`
+      <div class="sn-field">
+        <label>${f.l}</label>
+        <input id="sn-${ti}-${fi}" placeholder="Antwort…" autocomplete="off"/>
+      </div>`).join('');
+    div.innerHTML = `
+      <div class="sn-title">📐 ${task.title}</div>
+      <div class="sn-given">${task.desc}</div>
+      <div class="sn-fields">${fieldsHTML}</div>
+      <div class="btn-row">
+        <button class="btn btn-check" onclick="checkSN(${ti})">Prüfen</button>
+        <button class="btn btn-reset" onclick="resetSN(${ti})">↺ Reset</button>
+      </div>
+      <div class="sn-result" id="snr-${ti}"></div>`;
+    c.appendChild(div);
+  });
+
+  window.checkSN = function(ti){
+    if(solved.has(ti))return;
+    const task = SN[ti];
+    let allOk = true;
+    task.fields.forEach((f,fi)=>{
+      const inp = document.getElementById(`sn-${ti}-${fi}`);
+      const ok  = f.a.some(a=>a.toLowerCase()===inp.value.trim().toLowerCase());
+      inp.className = 'sn-field input '+(ok?'ok':'err');
+      // directly set via style since class-within-class is complex
+      inp.style.borderColor = ok ? 'var(--green)' : 'var(--red)';
+      inp.style.background  = ok ? 'rgba(74,222,128,.07)' : 'rgba(248,113,113,.07)';
+      if(!ok) allOk = false;
+    });
+    const res = document.getElementById(`snr-${ti}`);
+    res.className = `sn-result show ${allOk?'pass':'fail'}`;
+    res.innerHTML = allOk
+      ? `✅ Alle Antworten richtig! <span>Erklärung:</span> ${task.explain}`
+      : `❌ Noch nicht ganz. <span>Tipp:</span> ${task.explain}`;
+    if(allOk && !solved.has(ti)){ solved.add(ti); correct++; updateScore('sn',correct); }
+  };
+  window.resetSN = function(ti){
+    SN[ti].fields.forEach((_,fi)=>{
+      const inp = document.getElementById(`sn-${ti}-${fi}`);
+      inp.value=''; inp.style.borderColor=''; inp.style.background='';
+    });
+    const res = document.getElementById(`snr-${ti}`);
+    res.className='sn-result';
+  };
+})();
+
+// ═══════════════════════════════════════════════════════
+// RENDER: ROUTING
+// ═══════════════════════════════════════════════════════
+(function(){
+  const c = document.getElementById('rt-container');
+  let correct = 0;
+  const solved = new Set();
+
+  RT_SCENES.forEach((scene,si)=>{
+    const div = document.createElement('div');
+    div.className = 'rt-scenario';
+    let tablesHTML = '';
+    scene.tables.forEach((tbl,ti)=>{
+      const rowsHTML = tbl.rows.map((r,ri)=>{
+        const nhReadonly = r.nexthop_ro ? 'readonly value="direct"' : '';
+        return `<tr>
+          <td><code style="color:#7dd3fc;font-family:'JetBrains Mono',monospace;font-size:.78rem">${r.dest}</code></td>
+          <td><input class="rt-input" id="rt-${si}-${ti}-${ri}-nh" ${nhReadonly} placeholder="Next-Hop…"/></td>
+          <td><input class="rt-input" id="rt-${si}-${ti}-${ri}-if" placeholder="Interface…"/></td>
+        </tr>`;
+      }).join('');
+      tablesHTML += `
+        <div class="rt-table-wrap" style="margin-bottom:1rem">
+          <div class="rt-label">🖥️ Routing-Tabelle: ${tbl.router}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">💡 ${tbl.hint}</div>
+          <div class="tw" style="margin:0">
+            <table class="rt-table">
+              <tr><th>Zielnetz (Destination)</th><th>Next-Hop</th><th>Interface</th></tr>
+              ${rowsHTML}
+            </table>
+          </div>
+        </div>`;
+    });
+    div.innerHTML = `
+      <div class="rt-title">🗺️ ${scene.title}</div>
+      <p style="font-size:.82rem;color:var(--muted2);margin-bottom:.75rem">${scene.desc}</p>
+      <div class="net-diag">${scene.svg}</div>
+      ${tablesHTML}
+      <div class="btn-row">
+        <button class="btn btn-check" onclick="checkRT(${si})">Prüfen</button>
+        <button class="btn btn-reset" onclick="resetRT(${si})">↺ Reset</button>
+      </div>
+      <div class="rt-result" id="rtr-${si}"></div>`;
+    c.appendChild(div);
+  });
+
+  window.checkRT = function(si){
+    if(solved.has(si))return;
+    const scene = RT_SCENES[si];
+    let allOk = true, details = '';
+    scene.tables.forEach((tbl,ti)=>{
+      tbl.rows.forEach((r,ri)=>{
+        const nhInp = document.getElementById(`rt-${si}-${ti}-${ri}-nh`);
+        const ifInp = document.getElementById(`rt-${si}-${ti}-${ri}-if`);
+        const nhOk  = r.nexthop_ro || r.nexthop_ans.some(a=>a.toLowerCase()===nhInp.value.trim().toLowerCase());
+        const ifOk  = r.iface_ans.some(a=>a.toLowerCase()===ifInp.value.trim().toLowerCase());
+        nhInp.className = 'rt-input '+(nhOk?'ok':'err');
+        ifInp.className = 'rt-input '+(ifOk?'ok':'err');
+        if(!nhOk||!ifOk){ allOk=false; details+=`<br>• ${tbl.router} → ${r.dest}: `+((!nhOk)?`Next-Hop soll "${r.nexthop_ans[0]}" `:'')+(!ifOk?`Interface soll "${r.iface_ans[0]}"`:'')}
+      });
+    });
+    const res = document.getElementById(`rtr-${si}`);
+    res.className=`rt-result show ${allOk?'pass':'fail'}`;
+    res.innerHTML = allOk
+      ? '✅ Perfekt! Alle Routing-Einträge sind korrekt!'
+      : `❌ Noch Fehler vorhanden:${details}`;
+    if(allOk && !solved.has(si)){ solved.add(si); correct++; updateScore('rt',correct); }
+  };
+  window.resetRT = function(si){
+    const scene = RT_SCENES[si];
+    scene.tables.forEach((tbl,ti)=>{
+      tbl.rows.forEach((r,ri)=>{
+        const nh = document.getElementById(`rt-${si}-${ti}-${ri}-nh`);
+        const iF = document.getElementById(`rt-${si}-${ti}-${ri}-if`);
+        if(!r.nexthop_ro){nh.value='';} nh.className='rt-input'+(r.nexthop_ro?' readonly-style':'');
+        iF.value=''; iF.className='rt-input';
+        if(r.nexthop_ro){nh.value='direct';}
+      });
+    });
+    document.getElementById(`rtr-${si}`).className='rt-result';
+  };
+})();
+</script>
+</body>
+</html>
